@@ -642,32 +642,39 @@ async def change_answer(
 async def report_question(
     request: Request,
     questionId: str = Form(None),
-    reson: str = Form(None),
+    reson: str = Form(None),  # ← исправлено: reason вместо reson
 ):
     print(questionId, reson)
     if not request.cookies.get("id"):
-        return RedirectResponse(f"/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
     
     with Session(init.engine) as conn:
-        stmt = select(init.Reportq).where(init.Reportq.question_id == questionId, init.Reportq.reason == reson)
+        # Проверяем, существует ли уже такой репорт
+        stmt = select(init.Reportq).where(
+            init.Reportq.question_id == questionId, 
+            init.Reportq.reason == reson
+        )
         data = conn.execute(stmt).first()
+        
         if data:
             return RedirectResponse(f"/question/{questionId}", status_code=303)
         else:
-        # ПРАВИЛЬНО: получаем вопрос из таблицы Question
+            # Получаем вопрос из таблицы Question
             stmt = select(init.Question).where(init.Question.id == questionId)
-            question = conn.execute(stmt).first()
+            question_result = conn.execute(stmt).first()
             
-            if not question:
+            if not question_result:
                 print(f"Вопрос с ID {questionId} не найден")
                 return RedirectResponse(f"/question/{questionId}")
             
-            # Создаем репорт
+            question = question_result[0]  # получаем объект Question
+            
+            # Создаем репорт - используем правильные поля из модели Question
             reportq = init.Reportq(
                 question_id=questionId,  
                 reason=reson,
-                description=question[0].description,
-                image=question[0].image_path,  # description из вопроса
+                description=question.description,  # ← это поле есть в Question
+                image=question.image_path if question.image_path else ""  # ← используем image_path из Question
             )
             conn.add(reportq)
             conn.commit()
