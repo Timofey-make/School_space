@@ -58,26 +58,16 @@ class Comment(Base):
     
 class Reportq(Base):
     __tablename__ = "ReportsQ"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    question_id: Mapped[int]
-    reason: Mapped[str] = mapped_column(String(500))
-    description: Mapped[str]
-    image = Mapped[str]
-    
-    def __repr__(self) -> str:
-        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
-    
-class Reportq(Base):
-    __tablename__ = "ReportsQ"
     __table_args__ = {'extend_existing': True}
+    
     id: Mapped[int] = mapped_column(primary_key=True)
-    question_id: Mapped[int]
+    question_id: Mapped[int] = mapped_column()
     reason: Mapped[str] = mapped_column(String(500))
-    description: Mapped[str]
-    image = Mapped[str]
+    description: Mapped[str] = mapped_column(String(1000))  # ← лучше указать длину
+    image: Mapped[str] = mapped_column(String(500))
     
     def __repr__(self) -> str:
-        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r})"
+        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"  # ← исправлено: self.image!r
 
 class Reporta(Base):
     __tablename__ = "ReportsA"
