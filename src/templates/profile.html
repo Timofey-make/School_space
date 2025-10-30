@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль {{account[1]}}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <script src="{{ url_for('static', path='js/profile.js') }}" defer></script>
+</head>
+<body>
+    <div class="header">
+        <header class="header-inner container">
+            <div class="header-top">
+                <a class="header-logo" href="/">
+                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+                </a>
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            </div>
+            
+            <div class="header-actions">
+                {% if username %}
+                    <button id="create" class="btn header-actions-create">Создать вопрос</button>
+                    <a href="/profile/{{ username }}" class="link">{{ name }}</a>
+                {% else %}
+                    <a href="/login" class="link">Войти</a>
+                {% endif %}
+            </div>
+        </header>
+    </div>
+    <main>
+        <h1 class="visually-hidden">Профиль</h1>
+        <section class="profile-container container">
+            <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
+                <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
+            </a>
+            <div class="profile">
+                <div class="profile-info">
+                    <div class="profile-name">{{ account[1] }} ({{ account[2] }})</div>
+                    <div class="profile-additional">ID: {{ account[0] }}</div>
+                    <div class="profile-additional" style="color: {{ account[4] }};">{{ account[3] }}</div>
+
+                    {% if username == account[2] and (account[5] or account[0] == 1)%}
+                    <a class="link admin-link" href="/admin/panel">Перейти в админ-панель</a>
+                    {% endif %}
+                    {% if username == account[2] %}
+                    <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
+                    {% endif %}
+
+                </div>
+                <div class="profile-question" id="profileQuestionsContainer" data-username="{{ account[2] }}">
+                    {{ questions }}
+                </div>
+            </div>
+        </section>
+        <div class="overlay" id="overlayCreate">
+            <section class="create">
+                <button class="create-close-btn" id="close">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                </button>
+                <form action="/doadd" method="post" class="create-form">
+                    <div class="create-form-text">
+                        <label for="questionText">Какой у вас вопрос?</label>
+                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="1" required></textarea>
+                    </div>
+                    <div class="create-form-section">
+                        <select class="item-filter" name="subject">
+                            <option value="Математика" selected>Математика</option>
+                            <option value="Русский язык">Русский язык</option>
+                            <option value="Литература">Литература</option>
+                            <option value="Английский язык">Английский язык</option>
+                            <option value="Немецкий язык">Немецкий язык</option>
+                            <option value="Французский язык">Французский язык</option>
+                            <option value="Биология">Биология</option>
+                            <option value="Химия">Химия</option>
+                            <option value="Физика">Физика</option>
+                            <option value="География">География</option>
+                            <option value="История">История</option>
+                            <option value="Обществознание">Обществознание</option>
+                            <option value="Информатика">Информатика</option>
+                            <option value="Музыка">Музыка</option>
+                            <option value="ИЗО">ИЗО</option>
+                            <option value="Физическая культура">Физическая культура</option>
+                        </select>
+                        <select class="item-filter" id="grade-create" name="grade">
+                            <option value="1" selected>1 класс</option>
+                            <option value="2">2 класс</option>
+                            <option value="3">3 класс</option>
+                            <option value="4">4 класс</option>
+                            <option value="5">5 класс</option>
+                            <option value="6">6 класс</option>
+                            <option value="7">7 класс</option>
+                            <option value="8">8 класс</option>
+                            <option value="9">9 класс</option>
+                            <option value="10">10 класс</option>
+                            <option value="11">11 класс</option>
+                        </select>
+                    </div>
+                    <div class="upload-container">
+                        <label class="upload-label" for="imageInput">
+                            <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
+                            Прикрепить изображения
+                        </label>
+                        <input class="visually-hidden" type="file" id="imageInput" name="images" accept="image/*" multiple>
+
+                        <ul class="preview-list" id="previewList"></ul>
+                    </div>
+                    <button type="submit" class="btn">Создать вопрос</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

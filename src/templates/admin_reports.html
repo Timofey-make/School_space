@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <script src="{{ url_for('static', path='js/admin.js') }}" defer></script>
+
+    <title>Админ панель - Жалобы</title>
+</head>
+<body>
+    <div class="header">
+        <header class="header-inner container">
+            <div class="header-top">
+                <a class="header-logo" href="/">
+                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+                </a>
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            </div>
+            
+            <div class="header-actions">
+                {% if username %}
+                    <button id="create" class="btn header-actions-create">Создать вопрос</button>
+                    <a href="/profile/{{ username }}" class="link">{{ name }}</a>
+                {% else %}
+                    <a href="/login" class="link">Войти</a>
+                {% endif %}
+            </div>
+        </header>
+    </div>
+    <main>
+        <section class="admin-container container">
+            <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
+                <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
+            </a>
+            <h1 class="answers-title">Назначение админом</h1>
+            
+            <form action="/admin/add", method="post" class="admin-form" id="adminForm">
+                <input id="adminInput" class="input admin-input" type="text" name="target_username">
+                <button class="btn admin-btn" type="submit">Назначить админом</button>
+            </form>
+            <p id="successMessage" class="success"></p>
+            <p id="errorMessage" class="error"></p>
+        </section>
+        <section class="questions container">
+            <h1 class="answers-title">Жалобы на вопросы</h1>
+            <ul class="questions-content-list">
+            {% if questions %}
+                {% for question in questions %}
+                <li class="questions-content-item">
+                    <div class="questions-item-header">
+                        <div class="item-header-name">ID: {{ question.qid }}</div>
+                        <div class="item-header-subject">{{ question.reson }}</div>
+                    </div>
+                    <div class="questions-item-body">{{ question.text }}</div>
+                    <div class="sure-delete-btns">
+                        <form method="post" action="/admin/resolvequestion">
+                            <input type="hidden" name="id" value="{{ question.qid }}">
+                            <button type="submit" class="btn">Одобрить</button>
+                        </form>
+                        <form method="post" action="/admin/deletequestion">
+                            <input type="hidden" name="id" value="{{ question.qid }}">
+                            <button type="submit" class="btn delete-sure">Удалить</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+                {% else %}
+                    <p style="text-align: center;">Жалоб на вопросы нет.</p>
+                {% endif %}
+            </ul>
+        </section>
+        <section class="questions container">
+            <h1 class="answers-title">Жалобы на ответы</h1>            
+            <ul class="questions-content-list">
+            {% if answers %}
+                {% for answer in answers %}
+                <li class="questions-content-item">
+                    <div class="questions-item-header">
+                        <div class="item-header-name">ID: {{ answer.id }}</div>
+                        <div class="item-header-subject">{{ answer.reson }}</div>
+                    </div>
+                    <div class="questions-item-body">{{ answer.text }}</div>
+                    <div class="sure-delete-btns">
+                        <form method="post" action="/admin/resolveanswer">
+                            <input type="hidden" name="id" value="{{ answer.aid }}">
+                            <button type="submit" class="btn">Одобрить</button>
+                        </form>
+                        <form method="post" action="/admin/deleteanswer">
+                            <input type="hidden" name="id" value="{{ answer.aid }}">
+                            <button type="submit" class="btn delete-sure">Удалить</button>
+                        </form>
+                    </div>
+                </li>
+                {% endfor %}
+                {% else %}
+                    <p style="text-align: center;">Жалоб на ответы нет.</p>
+                {% endif %}
+            </ul>
+        </section>
+        <div class="overlay" id="overlayCreate">
+            <section class="create">
+                <button class="create-close-btn" id="close">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                </button>
+                <form action="/doadd" method="post" class="create-form">
+                    <div class="create-form-text">
+                        <label for="questionText">Какой у вас вопрос?</label>
+                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="1" required></textarea>
+                    </div>
+                    <div class="create-form-section">
+                        <select class="item-filter" name="subject">
+                            <option value="Математика" selected>Математика</option>
+                            <option value="Русский язык">Русский язык</option>
+                            <option value="Литература">Литература</option>
+                            <option value="Английский язык">Английский язык</option>
+                            <option value="Немецкий язык">Немецкий язык</option>
+                            <option value="Французский язык">Французский язык</option>
+                            <option value="Биология">Биология</option>
+                            <option value="Химия">Химия</option>
+                            <option value="Физика">Физика</option>
+                            <option value="География">География</option>
+                            <option value="История">История</option>
+                            <option value="Обществознание">Обществознание</option>
+                            <option value="Информатика">Информатика</option>
+                            <option value="Музыка">Музыка</option>
+                            <option value="ИЗО">ИЗО</option>
+                            <option value="Физическая культура">Физическая культура</option>
+                        </select>
+                        <select class="item-filter-grade input" id="grade-create" name="grade">
+                            <option value="1" selected>1 класс</option>
+                            <option value="2">2 класс</option>
+                            <option value="3">3 класс</option>
+                            <option value="4">4 класс</option>
+                            <option value="5">5 класс</option>
+                            <option value="6">6 класс</option>
+                            <option value="7">7 класс</option>
+                            <option value="8">8 класс</option>
+                            <option value="9">9 класс</option>
+                            <option value="10">10 класс</option>
+                            <option value="11">11 класс</option>
+                        </select>
+                    </div>
+                    <div class="upload-container">
+                        <label class="upload-label" for="imageInput">
+                            <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
+                            Прикрепить изображения
+                        </label>
+                        <input class="visually-hidden" type="file" id="imageInput" name="images" accept="image/*" multiple>
+
+                        <ul class="preview-list" id="previewList"></ul>
+                    </div>
+                    <button type="submit" class="btn">Создать вопрос</button>
+                </form>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

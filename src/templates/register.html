@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='/auth.css') }}">
+    <script src="{{ url_for('static', path='/js/register.js') }}" defer></script>
+    <title>Регистрация</title>
+</head>
+<body>
+    <div class="auth-container">
+        <a href="/" class="arrow-back">
+            <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="">
+        </a>
+        <div class="auth">
+            <h1 class="auth-title">Регистрация</h1>
+            <form id="registerForm" class="auth-form" method="post" action="/doregister">
+                <div class="form-name">
+                    <label class="form-login-title" for="name">Имя</label>
+                    <input class="input" name="name" id="name" type="text" placeholder="Введите имя" maxlength="15" required>
+                </div>
+                <div class="form-login">
+                    <label class="form-login-title" for="login">Логин</label>
+                    <input class="input" name="login" id="login" type="text" placeholder="Введите логин" maxlength="15" required>
+                </div>
+                <div class="form-password">
+                    <label class="form-password-title" for="password">Пароль</label>
+                    <input class="input" name="password" id="password" type="password" placeholder="Введите пароль" required maxlength="20">
+                </div>
+                <button class="btn" type="submit">Зарегистрироваться</button>
+            </form>
+            <a class="auth-link link" href="/login">Есть аккаунт? Вход</a>
+            <p id="errorMessage" class="error"></p>
+        </div>
+    </div>
+</body>
+</html>

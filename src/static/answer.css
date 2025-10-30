@@ -1,0 +1,250 @@
+/* question */
+.question-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: 20px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.arrow-back-answer {
+    margin-right: auto;
+}
+
+.question {
+    display: flex;
+    flex-direction: column;
+    border: var(--border);
+    padding: 20px;
+    border-radius: 10px;
+    row-gap: 10px;
+    position: relative;
+}
+
+.question.answer-login {
+    margin-bottom: 30px;
+    margin-top: 20px;
+}
+
+.edit-btn {
+    border: none;
+    background: transparent;
+}
+.delete-btn {
+    display: flex;
+    background: transparent;
+    border: none;
+    color: var(--color-blue-dark);
+    padding: 10px;
+    gap: 10px;
+    align-items: center;
+}
+.edit-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* Выпадающее меню */
+.question-edit-container {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%; /* появление под кнопкой */
+    right: 0;
+    margin-top: 5px;
+    background-color: var(--color-windows);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    min-width: 140px;
+}
+
+.question-edit-container.active {
+    display: flex;
+}
+
+.question-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: flex-start;
+    margin-top: 16px;
+}
+.question-images img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.question-images.scale img:hover {
+    cursor: pointer;
+    transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.25);
+}
+.image-modal {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+.image-modal.active {
+    display: block;
+}
+.image-modal img {
+    position: fixed;
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 16px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    object-fit: contain;
+}
+
+
+
+/* answer */
+.answers {
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.answers-title {
+    text-align: center;
+}
+
+.answer-textarea {
+    display: flex;
+    flex-direction: column;
+    row-gap: 25px;
+    height: 100%;
+}
+
+.answer-btn {
+    display: inline;
+    margin-right: auto;
+}
+
+.answer-text {
+    white-space: pre-wrap;
+}
+
+.short-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.read-more-btn {
+    background: transparent;
+    border: none;
+}
+
+/* delete sure */
+.sure-delete {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--color-light);
+    width: 30%;
+    height: 40%;
+    max-width: 400px;
+    max-height: 300px;
+    border-radius: 10px;
+    padding: 45px 15px;
+    overflow-y: auto;
+
+}
+.sure-delete-title {
+    text-align: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    font-weight: 700;
+    font-size: clamp(16px, 1.22vw, 32px);
+}
+.sure-delete-btns {
+    display: flex;
+    gap: 20px;
+}
+.delete-sure {
+    background-color: var(--color-red);
+}
+.delete-sure:hover {
+    background-color: var(--color-dark-red);
+    color: var(--color-white);
+}
+
+/* Report */
+.report {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--color-light);
+    width: 70%;
+    height: 70%;
+    max-width: 500px;
+    max-height: 500px;
+    border-radius: 10px;
+    padding: 45px 15px;
+    overflow-y: auto;
+}
+.report-title {
+    text-align: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    font-weight: 700;
+    font-size: clamp(20px, 1.22vw, 32px);
+}
+.label-report {
+    height: 100%;
+}
+.report-submit-btn {
+    margin-top: auto;
+}
+
+@media (max-width: 1024px) {
+    /* sure-delete */
+    .sure-delete {
+        width: 65%;
+        height: 65%;
+    }
+    .image-modal img {
+        max-width: 85%;
+    }
+}
+@media (max-width: 767px) {
+    .answer-textarea {
+        row-gap: 10px;
+    }
+    .image-modal img {
+        max-width: 90%;
+    }
+}
+@media (max-width: 480px) {
+    /* sure-delete */
+    .sure-delete {
+        width: 85%;
+        height: 65%;
+    }
+}
+
+
+

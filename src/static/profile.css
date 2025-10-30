@@ -1,0 +1,52 @@
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+}
+
+.profile {
+    display: flex;
+    gap: 20px;
+}
+
+
+.profile-info {
+    margin-top: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 25%;
+    flex: 1;
+}
+.profile-image {
+    width: 200px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+
+.profile-name {
+    font-weight: 700;
+    font-size: clamp(18px, 1.3vw, 25px);
+    overflow-wrap: break-word;
+}
+
+.profile-additional {
+    font-size: clamp(18px, 1.3vw, 25px);
+    overflow-wrap: break-word;
+}
+
+
+.logout-link {
+    color: var(--color-red)
+}
+
+
+.profile-question {
+    width: 75%;
+}
+
+
+
+
