@@ -49,6 +49,7 @@
             <ul class="questions-content-list">
             {% if questions %}
                 {% for question in questions %}
+                {{ question }}
                 <li class="questions-content-item">
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ question.qid }}</div>
