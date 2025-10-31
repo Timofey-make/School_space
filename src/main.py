@@ -6,7 +6,7 @@ from urllib.parse import unquote
 from datetime import datetime
 from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
-
+import time
 from requests import session
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -446,31 +446,55 @@ async def question_page(request: Request, note_id: int):
         print(f"Ошибка при загрузке страницы вопроса: {e}")
         return RedirectResponse(url="/?error=server_error", status_code=303)
 
-
 @app.post("/addcomment", tags=["Добавить комментарий"])
 async def addcomment(
     request: Request,
     comment: str = Form(...),
     id: int = Form(...),
+    image: UploadFile = File(None),  # Добавляем поле для загрузки файла
 ):
     # Убираем пробелы и переводы строк
     clean_comment = comment.strip()
 
-    # Если комментарий пустой после очистки — не добавляем
-    if not clean_comment:
+    # Если комментарий пустой после очистки и нет картинки — не добавляем
+    if not clean_comment and not image:
         return RedirectResponse(url=f'/question/{id}', status_code=303)
+
+    image_path = None
+    
+    # Обрабатываем загруженную картинку, если она есть
+    if image and image.filename:
+        # Проверяем, что это действительно изображение
+        if not image.content_type.startswith('image/'):
+            return RedirectResponse(url=f'/question/{id}', status_code=303)
+        
+        # Генерируем уникальное имя файла
+        file_extension = image.filename.split('.')[-1]
+        image_path = f"comment_{int(time.time())}_{id}.{file_extension}"
+        
+        # Сохраняем файл
+        upload_dir = Path("static/uploads/comments")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+        
+        file_path = upload_dir / image_path
+        
+        # Читаем и сохраняем файл
+        contents = await image.read()
+        with open(file_path, "wb") as f:
+            f.write(contents)
 
     with Session(init.engine) as conn:
         comments = init.Comment(
             question_id=id,
             owner=function.decrypt(request.cookies.get("username")),
             description=clean_comment,
+            image_filename=image_filename,  # Добавляем поле для имени файла изображения
         )
         conn.add(comments)
         conn.commit()
+    
     function.upgrade(request.cookies.get("id"))
     function.upgrade_title(request.cookies.get("id"))
-
 
     return RedirectResponse(url=f'/question/{id}', status_code=303)
     
@@ -551,40 +575,86 @@ async def delete_question(
 @app.post("/change", tags=["Изменение вопроса"])
 async def change_question(
     request: Request,
-    description: str = Form(...),
-    new_description: str = Form(...),
-    owner: str = Form(...),
     subject: str = Form(...),
     grade: str = Form(...),
+    new_description: str = Form(...),
     id: int = Form(...),
+    images: list[UploadFile] = File(None)
 ):
-    current_user = function.decrypt(request.cookies.get("username"))
-    if current_user == owner:
-        print(description)
+    try:
+        current_user = function.decrypt(request.cookies.get("username"))
+        
         with Session(init.engine) as session:
-            if new_description:
-                # Обновление вопроса
-                stmt = update(init.Question).where(
-                    and_(
-                        init.Question.description == description,
-                        init.Question.owner == current_user,
-                        init.Question.id == id,
-                    )
-                ).values(description=new_description, grade=grade, subject=subject)
-            else:
-                stmt = update(init.Question).where(
-                    and_(
-                        init.Question.description == description,
-                        init.Question.owner == current_user,
-                        init.Question.id == id,
-                    )
-                ).values(grade=grade, subject=subject)
+            # Получаем текущий вопрос для проверки владельца
+            question = session.query(init.Question).filter(
+                init.Question.id == id
+            ).first()
+            
+            if not question or question.owner != current_user:
+                return RedirectResponse("/", status_code=303)
+            
+            # Обрабатываем изображения только если они переданы
+            image_paths_str = None
+            
+            if images and any(image.filename for image in images):
+                saved_paths = []
+                
+                # Создаем папку для изображений, если не существует
+                save_dir = os.path.join(static_dir, "images")
+                os.makedirs(save_dir, exist_ok=True)
+                
+                # Обрабатываем каждое изображение
+                for image in images:
+                    if not image.filename:
+                        continue
+                    
+                    # Проверяем тип файла
+                    if not image.content_type.startswith("image/"):
+                        continue
+                    
+                    # Генерируем уникальное имя файла
+                    ext = image.filename.split('.')[-1]
+                    filename = f"{uuid.uuid4()}.{ext}"
+                    filepath = os.path.join(save_dir, filename)
+                    
+                    # Сохраняем файл
+                    with open(filepath, "wb") as f:
+                        f.write(await image.read())
+                    
+                    # Добавляем путь в список
+                    saved_paths.append(f"/static/images/{filename}")
+                
+                # Обновляем пути к изображениям только если загружены новые
+                if saved_paths:
+                    image_paths_str = ",".join(saved_paths)
+            
+            # Подготавливаем данные для обновления
+            update_data = {
+                "grade": grade,
+                "subject": subject
+            }
+            
+            # Обновляем описание только если оно не пустое
+            if new_description.strip():
+                update_data["description"] = new_description.strip()
+            
+            # Если есть новые изображения, обновляем поле image_path
+            if image_paths_str is not None:
+                update_data["image_path"] = image_paths_str
+            
+            # Обновление вопроса
+            stmt = update(init.Question).where(
+                init.Question.id == id
+            ).values(**update_data)
+            
             session.execute(stmt)
             session.commit()
         
-        return RedirectResponse("/", status_code=303)    
-    else:
         return RedirectResponse("/", status_code=303)
+    
+    except Exception as e:
+        print(f"Ошибка при изменении вопроса: {e}")
+        return RedirectResponse(url="/?error=server_error", status_code=303)
 
 @app.post("/delete_answer", tags=["Удаление вопроса"])
 async def delete_answer(
