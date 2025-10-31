@@ -60,7 +60,6 @@ function render(answers = []) {
 
 function toHTML(answer) {
     const username = answersList.dataset.username
-    console.log(answer.text)
     if (username === answer.username) {
         if (answer.text.split('\n').length > 3) {
             return `<li class="questions-content-item">
@@ -85,6 +84,16 @@ function toHTML(answer) {
                     <div>${timeAgo(answer.created_at)}</div>
                 </div>
                 <div class="answer-text short-text">${answer.text}</div>
+                ${answer.images.split(',') && answer.images.split(',').length > 0 ? `
+                <div class="question-images scale">
+                    ${answer.images.split(',').map(src => `
+                        <img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">
+                    `).join('')}
+                </div>
+                <div class="image-modal" id="imageModal" onclick="closeModal()">
+                    <img src="" alt="Preview">
+                </div>
+            ` : ''}
 
                 <button id="finishReadBtn" class="link read-more-btn">Читать далее</button>
             </li>
@@ -113,6 +122,16 @@ function toHTML(answer) {
                     <div>${timeAgo(answer.created_at)}</div>
                 </div>
                 <div class="answer-text short-text">${answer.text}</div>
+                ${answer.images.split(',') && answer.images.split(',').length > 0 ? `
+                <div class="question-images scale">
+                    ${answer.images.split(',').map(src => `
+                        <img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">
+                    `).join('')}
+                </div>
+                <div class="image-modal" id="imageModal" onclick="closeModal()">
+                    <img src="" alt="Preview">
+                </div>
+            ` : ''}
             </li>
             `
         }
@@ -137,8 +156,14 @@ function toHTML(answer) {
                     <div>${timeAgo(answer.created_at)}</div>
                 </div>
                 <div class="answer-text short-text">${answer.text}</div>
-
                 <button id="finishReadBtn" class="link read-more-btn">Читать далее</button>
+                ${answer.images.split(',') && answer.images.split(',').length > 0 ? `
+                <div class="question-images scale">
+                    ${answer.images.split(',').map(src => `
+                        <img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">
+                    `).join('')}
+                </div>
+            ` : ''}
             </li>
             `
         }
@@ -161,10 +186,17 @@ function toHTML(answer) {
                     <div>${timeAgo(answer.created_at)}</div>
                 </div>
                 <div class="answer-text short-text">${answer.text}</div>
+                ${answer.images.split(',') && answer.images.split(',').length > 0 ? `
+                <div class="question-images scale">
+                    ${answer.images.split(',').map(src => `
+                        <img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">
+                    `).join('')}
+                </div>
+            ` : ''}
             </li>
             `
         }
-    }   
+    } 
 }
 
 start()

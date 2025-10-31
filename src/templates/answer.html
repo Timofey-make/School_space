@@ -72,9 +72,6 @@
                     {% endfor %}
                 </div>
                 {% endif %}
-                <div class="image-modal" id="imageModal" onclick="closeModal()">
-                    <img src="" alt="Preview">
-                </div>
 
             </div>
             <div class="answers">
@@ -273,13 +270,22 @@
                 <button class="create-close-btn" id="closeChangeAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
                 </button>
-                <form action="/change_answer" method="post" class="create-form">
+                <form action="/change_answer" method="post" class="create-form" id="formChangeAnswer">
                     <div class="create-form-text">
                         <label for="questionText">Что изменить?</label>
                         <input id="changeAnswerOwner" type="hidden" name="owner" value="">
                         <input id="changeAnswerId" type="hidden" name="id" value="">
                         <input id="changeQuestionId" type="hidden" name="questionId" value="">
                         <textarea class="form-text-textarea" name="new_description" id="questionText" minlength="1"></textarea>
+                    </div>
+                    <div class="upload-container">
+                        <label class="upload-label" for="imageInputChangeAnswer">
+                            <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
+                            Прикрепить изображения
+                        </label>
+                        <input class="visually-hidden" type="file" id="imageInputChangeAnswer" name="images" accept="image/*" multiple>
+
+                        <ul class="preview-list" id="previewListChangeAnswer"></ul>
                     </div>
                     <button type="submit" class="btn">
                         Изменить

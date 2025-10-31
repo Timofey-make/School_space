@@ -286,6 +286,7 @@ function closeModal() {
 }
 
 
+
 // change question upload
 const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
 const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
@@ -349,16 +350,12 @@ formChangeQuestion.addEventListener('submit', async (e) => {
 });
 
 // answer upload
-
-
-
 const imageInputAnswer = document.getElementById('imageInputAnswer')
 const previewListAnswer = document.getElementById('previewListAnswer')
 let filesArrayAnswer = []
 
 imageInputAnswer.addEventListener('change', (event) => {
     filesArrayAnswer.push(...event.target.files)
-    console.log('dsa')
     renderPreviewsAnswer()
 })
 
@@ -409,3 +406,67 @@ formAnswer.addEventListener('submit', async (e) => {
         console.error('Ошибка отправки формы:', err);
     }
 });
+
+// change answer upload
+const imageInputChangeAnswer = document.getElementById('imageInputChangeAnswer')
+const previewListChangeAnswer = document.getElementById('previewListChangeAnswer')
+let filesArrayChangeAnswer = []
+
+imageInputChangeAnswer.addEventListener('change', (event) => {
+    filesArrayChangeAnswer.push(...event.target.files)
+    renderPreviewsAnswer()
+})
+
+
+function renderPreviewsAnswer() {
+    const html = filesArrayChangeAnswer.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListChangeAnswer.innerHTML = html
+}
+
+previewListChangeAnswer.addEventListener('click', (e) => {
+    const item = e.target.closest('.file-item')
+    if (!item) {
+        return
+    }
+
+    const index = item.dataset.index
+    filesArrayChangeAnswer.splice(index, 1);
+    renderPreviewsAnswer();
+});
+
+const formChangeAnswer = document.getElementById('formChangeAnswer');
+formChangeAnswer.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formDataAnswer = new FormData()
+    formDataAnswer.append('comment', formChangeAnswer.new_description.value)
+    formDataAnswer.append('owner', formChangeAnswer.owner.value)
+    formDataAnswer.append('id', formChangeAnswer.id.value)
+    formDataAnswer.append('questionId', formChangeAnswer.questionId.value)
+
+    filesArrayChangeAnswer.forEach(file => {
+        console.log(file)
+        formDataAnswer.append('images', file)
+    })
+
+
+    try {
+        const response = await fetch('/change_answer', {
+            method: 'POST',
+            body: formDataAnswer
+        });
+
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            const text = await response.text();
+            console.log(text);
+        }
+    } catch (err) {
+        console.error('Ошибка отправки формы:', err);
+    }
+});
+
+
+
