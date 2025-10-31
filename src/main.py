@@ -696,33 +696,85 @@ async def delete_answer(
     else:
         return RedirectResponse("/", status_code=303)
 
-@app.post("/change_answer", tags=["Изменение вопроса"])
+@app.post("/change_answer", tags=["Изменение комментария"])
 async def change_answer(
     request: Request,
-    new_description: str = Form(...),
+    comment: str = Form(...),  # Изменили new_description на comment
     owner: str = Form(...),
     id: int = Form(...),
     questionId: int = Form(...),
+    images: list[UploadFile] = File(None),
 ):
-    print(new_description, owner, id)
-    current_user = function.decrypt(request.cookies.get("username"))
-    if current_user == owner:
-        if new_description:
-            with Session(init.engine) as session:
-                stmt = update(init.Comment).where(
-                        and_(
-                            init.Comment.owner == current_user,
-                            init.Comment.id == id,
-                        )
-                    ).values(description=new_description)
-            session.execute(stmt)
-            session.commit()
-            
-            return RedirectResponse(f"/question/{questionId}", status_code=303) 
-        else:
+    try:
+        current_user = function.decrypt(request.cookies.get("username"))
+        if current_user != owner:
             return RedirectResponse(f"/question/{questionId}", status_code=303)
-    else:
+        
+        with Session(init.engine) as session:
+            # Получаем текущий комментарий
+            comment_obj = session.query(init.Comment).filter(
+                init.Comment.id == id,
+                init.Comment.owner == current_user
+            ).first()
+            
+            if not comment_obj:
+                return RedirectResponse(f"/question/{questionId}", status_code=303)
+            
+            # Подготавливаем данные для обновления
+            update_data = {}
+            
+            # Обновляем описание только если оно не пустое
+            if comment.strip():  # Используем comment вместо new_description
+                update_data["description"] = comment.strip()
+            
+            # Обрабатываем изображения только если они переданы
+            if images and any(image.filename for image in images):
+                saved_paths = []
+                
+                # Создаем папку для изображений комментариев
+                save_dir = os.path.join(static_dir, "images", "comments")
+                os.makedirs(save_dir, exist_ok=True)
+
+                # Обрабатываем каждое изображение
+                for image in images:
+                    if not image.filename:
+                        continue
+                    
+                    # Проверяем тип файла
+                    if not image.content_type.startswith("image/"):
+                        continue
+                    
+                    # Генерируем уникальное имя файла
+                    ext = image.filename.split('.')[-1]
+                    filename = f"comment_{uuid.uuid4()}.{ext}"
+                    filepath = os.path.join(save_dir, filename)
+                    
+                    # Сохраняем файл
+                    with open(filepath, "wb") as f:
+                        f.write(await image.read())
+                    
+                    # Добавляем путь в список
+                    saved_paths.append(f"/static/images/comments/{filename}")
+                
+                # Обновляем пути к изображениям только если загружены новые
+                if saved_paths:
+                    update_data["image_filename"] = ",".join(saved_paths)
+            
+            # Если есть что обновлять
+            if update_data:
+                stmt = update(init.Comment).where(
+                    init.Comment.id == id,
+                    init.Comment.owner == current_user
+                ).values(**update_data)
+                
+                session.execute(stmt)
+                session.commit()
+        
         return RedirectResponse(f"/question/{questionId}", status_code=303)
+    
+    except Exception as e:
+        print(f"Ошибка при изменении комментария: {e}")
+        return RedirectResponse(f"/question/{questionId}?error=server_error", status_code=303)
 
 @app.post("/report_question", tags=["репорты"])
 async def report_question(
