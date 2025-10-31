@@ -347,3 +347,65 @@ formChangeQuestion.addEventListener('submit', async (e) => {
         console.error('Ошибка отправки формы:', err);
     }
 });
+
+// answer upload
+
+
+
+const imageInputAnswer = document.getElementById('imageInputAnswer')
+const previewListAnswer = document.getElementById('previewListAnswer')
+let filesArrayAnswer = []
+
+imageInputAnswer.addEventListener('change', (event) => {
+    filesArrayAnswer.push(...event.target.files)
+    console.log('dsa')
+    renderPreviewsAnswer()
+})
+
+
+function renderPreviewsAnswer() {
+    const html = filesArrayAnswer.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListAnswer.innerHTML = html
+}
+
+previewListAnswer.addEventListener('click', (e) => {
+    const item = e.target.closest('.file-item')
+    if (!item) {
+        return
+    }
+
+    const index = item.dataset.index
+    filesArrayAnswer.splice(index, 1);
+    renderPreviewsAnswer();
+});
+
+const formAnswer = document.getElementById('formAnswer');
+formAnswer.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formDataAnswer = new FormData()
+    formDataAnswer.append('comment', formAnswer.comment.value)
+    formDataAnswer.append('id', formAnswer.id.value)
+
+    filesArrayAnswer.forEach(file => {
+        formDataAnswer.append('images', file)
+    })
+
+
+    try {
+        const response = await fetch('/addcomment', {
+            method: 'POST',
+            body: formDataAnswer
+        });
+
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            const text = await response.text();
+            console.log(text);
+        }
+    } catch (err) {
+        console.error('Ошибка отправки формы:', err);
+    }
+});
