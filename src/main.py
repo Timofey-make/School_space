@@ -220,6 +220,7 @@ async def get_answers():
             init.Comment.owner,
             init.Comment.description,
             init.Comment.created_at,
+            init.Comment.image_filename,
         ).order_by(init.Comment.id.desc())
         data = conn.execute(stmt).fetchall()
 
@@ -234,6 +235,7 @@ async def get_answers():
                 "username": row.owner,
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
+                "images": row.image_filename,
             })
         return JSONResponse(content=questions)
 
@@ -451,52 +453,66 @@ async def addcomment(
     request: Request,
     comment: str = Form(...),
     id: int = Form(...),
-    image: UploadFile = File(None),  # Добавляем поле для загрузки файла
+    images: list[UploadFile] = File(None),
 ):
-    # Убираем пробелы и переводы строк
-    clean_comment = comment.strip()
+    try:
+        # Убираем пробелы и переводы строк
+        clean_comment = comment.strip()
 
-    # Если комментарий пустой после очистки и нет картинки — не добавляем
-    if not clean_comment and not image:
-        return RedirectResponse(url=f'/question/{id}', status_code=303)
-
-    image_path = None
-    
-    # Обрабатываем загруженную картинку, если она есть
-    if image and image.filename:
-        # Проверяем, что это действительно изображение
-        if not image.content_type.startswith('image/'):
+        # Если комментарий пустой после очистки и нет картинок — не добавляем
+        if not clean_comment and (not images or not any(img.filename for img in images)):
             return RedirectResponse(url=f'/question/{id}', status_code=303)
-        
-        # Генерируем уникальное имя файла
-        file_extension = image.filename.split('.')[-1]
-        image_path = f"comment_{int(time.time())}_{id}.{file_extension}"
-        
-        # Сохраняем файл
-        upload_dir = Path("static/uploads/comments")
-        upload_dir.mkdir(parents=True, exist_ok=True)
-        
-        file_path = upload_dir / image_path
-        
-        # Читаем и сохраняем файл
-        contents = await image.read()
-        with open(file_path, "wb") as f:
-            f.write(contents)
 
-    with Session(init.engine) as conn:
-        comments = init.Comment(
-            question_id=id,
-            owner=function.decrypt(request.cookies.get("username")),
-            description=clean_comment,
-            image_filename=image_filename,  # Добавляем поле для имени файла изображения
-        )
-        conn.add(comments)
-        conn.commit()
+        saved_paths = []
+        
+        # Обрабатываем загруженные картинки, если они есть
+        if images:
+            # Создаем папку для изображений комментариев
+            save_dir = os.path.join(static_dir, "images", "comments")
+            os.makedirs(save_dir, exist_ok=True)
+
+            for image in images:
+                if not image.filename:
+                    continue
+                
+                # Проверяем, что это действительно изображение
+                if not image.content_type.startswith('image/'):
+                    continue
+                
+                # Генерируем уникальное имя файла
+                ext = image.filename.split('.')[-1]
+                filename = f"comment_{uuid.uuid4()}.{ext}"
+                filepath = os.path.join(save_dir, filename)
+                
+                # Сохраняем файл
+                with open(filepath, "wb") as f:
+                    f.write(await image.read())
+                
+                # Добавляем путь в список
+                saved_paths.append(f"/static/images/comments/{filename}")
+
+        # Преобразуем список путей в строку для хранения в БД
+        image_paths_str = ",".join(saved_paths) if saved_paths else None
+
+        with Session(init.engine) as conn:
+            comments = init.Comment(
+                question_id=id,
+                owner=function.decrypt(request.cookies.get("username")),
+                description=clean_comment,
+                image_filename=image_paths_str,  # Сохраняем пути к изображениям
+            )
+            conn.add(comments)
+            conn.commit()
+        
+        # Повышение уровня пользователя
+        function.upgrade(request.cookies.get("id"))
+        function.upgrade_title(request.cookies.get("id"))
+
+        return RedirectResponse(url=f'/question/{id}', status_code=303)
     
-    function.upgrade(request.cookies.get("id"))
-    function.upgrade_title(request.cookies.get("id"))
-
-    return RedirectResponse(url=f'/question/{id}', status_code=303)
+    except Exception as e:
+        print(f"Ошибка при добавлении комментария: {e}")
+        return RedirectResponse(url=f'/question/{id}?error=server_error', status_code=303)
     
 @app.get("/profile/{username}", tags=["Профиль"])
 async def profile(request: Request, username: str):
