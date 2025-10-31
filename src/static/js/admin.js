@@ -103,3 +103,21 @@ form.addEventListener('submit', async (e) => {
         console.error('Ошибка отправки формы:', err);
     }
 });
+
+const questionImages = document.getElementById('questionImages')
+const paths = questionImages.dataset.images.split(',')
+const htmlImages = paths.map((path) => {
+    return `<img src="${path}" alt="Изображение вопроса" onclick="openModal(this)">`
+})
+questionImages.innerHTML = htmlImages
+
+function openModal(img) {
+    const modal = document.getElementById('imageModal')
+    const modalImg = modal.querySelector('img')
+    modalImg.src = img.src
+    modal.classList.add('active')
+}
+
+function closeModal() {
+    document.getElementById('imageModal').classList.remove('active');
+}

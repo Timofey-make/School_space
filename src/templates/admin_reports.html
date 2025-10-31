@@ -49,13 +49,20 @@
             <ul class="questions-content-list">
             {% if questions %}
                 {% for question in questions %}
-                {{ question }}
+                {{ question['images'] }}
                 <li class="questions-content-item">
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ question.qid }}</div>
                         <div class="item-header-subject">{{ question.reson }}</div>
                     </div>
                     <div class="questions-item-body">{{ question.text }}</div>
+                    {% if question['image'] %}
+                    <div class="question-images scale" data-images="{{ question['image'] }}" id="questionImages">
+                    </div>
+                    <div class="image-modal" id="imageModal" onclick="closeModal()">
+                        <img src="" alt="Preview">
+                    </div>
+                    {% endif %}
                     <div class="sure-delete-btns">
                         <form method="post" action="/admin/resolvequestion">
                             <input type="hidden" name="id" value="{{ question.qid }}">
