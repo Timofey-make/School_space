@@ -287,63 +287,63 @@ function closeModal() {
 
 
 // change question upload
-// const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
-// const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
-// let filesArrayChangeQuestion = []
+const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
+const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
+let filesArrayChangeQuestion = []
 
-// imageInputChangeQuestion.addEventListener('change', (event) => {
-//     filesArrayChangeQuestion.push(...event.target.files)
-//     renderPreviewsChangeQuestion()
-// })
+imageInputChangeQuestion.addEventListener('change', (event) => {
+    filesArrayChangeQuestion.push(...event.target.files)
+    renderPreviewsChangeQuestion()
+})
 
-// function renderPreviewsChangeQuestion() {
-//     const html = filesArrayChangeQuestion.map((file, index) => {
-//         return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-//     }).join('')
-//     previewListChangeQuestion.innerHTML = html
-// }
+function renderPreviewsChangeQuestion() {
+    const html = filesArrayChangeQuestion.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListChangeQuestion.innerHTML = html
+}
 
-// previewListChangeQuestion.addEventListener('click', (e) => {
-//     const item = e.target.closest('.file-item')
-//     if (!item) {
-//         return
-//     }
+previewListChangeQuestion.addEventListener('click', (e) => {
+    const item = e.target.closest('.file-item')
+    if (!item) {
+        return
+    }
 
-//     const index = item.dataset.index
-//     filesArrayChangeQuestion.splice(index, 1);
-//     renderPreviewsChangeQuestion();
-// });
+    const index = item.dataset.index
+    filesArrayChangeQuestion.splice(index, 1);
+    renderPreviewsChangeQuestion();
+});
 
-// const formChangeQuestion = document.getElementById('formChangeQuestion');
-// formChangeQuestion.addEventListener('submit', async (e) => {
-//     e.preventDefault();
-//     const formData = new FormData()
-//     formData.append('subject', formChangeQuestion.subject.value)
-//     formData.append('grade', formChangeQuestion.grade.value)
-//     formData.append('new_description', formChangeQuestion.new_description.value)
-//     formData.append('id', formChangeQuestion.id.value)
-
-
-//     filesArrayChangeQuestion.forEach(file => {
-//         console.log(file)
-//         formData.append('images', file)
-//     })
-//     console.log(formData)
+const formChangeQuestion = document.getElementById('formChangeQuestion');
+formChangeQuestion.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData()
+    formData.append('subject', formChangeQuestion.subject.value)
+    formData.append('grade', formChangeQuestion.grade.value)
+    formData.append('new_description', formChangeQuestion.new_description.value)
+    formData.append('id', formChangeQuestion.id.value)
 
 
-//     try {
-//         const response = await fetch('/change', {
-//             method: 'POST',
-//             body: formData
-//         });
+    filesArrayChangeQuestion.forEach(file => {
+        console.log(file)
+        formData.append('images', file)
+    })
+    console.log(formData)
 
-//         if (response.redirected) {
-//             window.location.href = response.url;
-//         } else {
-//             const text = await response.text();
-//             console.log(text);
-//         }
-//     } catch (err) {
-//         console.error('Ошибка отправки формы:', err);
-//     }
-// });
+
+    try {
+        const response = await fetch('/change', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.redirected) {
+            window.location.href = response.url;
+        } else {
+            const text = await response.text();
+            console.log(text);
+        }
+    } catch (err) {
+        console.error('Ошибка отправки формы:', err);
+    }
+});
