@@ -120,6 +120,20 @@ answersList.addEventListener('click', (e) => {
             changeAnswerId.value = changeAnswerBtn.dataset.id
             changeQuestionId.value = changeAnswerBtn.dataset.questionid
 
+            const answerEl = e.target.closest('.questions-content-item')
+            formChangeAnswer.new_description.value = answerEl.querySelector('.answer-text').innerHTML
+            images = answerEl.querySelector('.question-images')
+            if (images) {
+                images = images.querySelectorAll('img')
+                console.log(images)
+                filesArrayChangeAnswer = []
+                previewListChangeAnswer.innerHTML = ``
+                getFilesFromImages(images).then(files => {
+                    filesArrayChangeAnswer = files
+                    renderPreviewsChangeAnswer()
+                });
+            }
+
 
             
 
@@ -128,6 +142,9 @@ answersList.addEventListener('click', (e) => {
 
                 const textarea = overlayChangeAnswerContainer.querySelector('textarea')
                 if (textarea) textarea.value = ''
+
+                filesArrayChangeAnswer = []
+                previewListChangeAnswer.innerHTML = ``
             })
         }
     }
@@ -214,11 +231,11 @@ if (changeQuestionBtn && overlayChangeQuestionContainer && closeChangeQuestionCo
             images = images.querySelectorAll('img')
             filesArrayChangeQuestion = []
             previewListChangeQuestion.innerHTML = ``
+            getFilesFromImages(images).then(files => {
+                filesArrayChangeQuestion = files
+                renderPreviewsChangeQuestion()
+            });
         }
-        getFilesFromImages(images).then(files => {
-            filesArrayChangeQuestion = files
-            renderPreviewsChangeQuestion()
-        });
     })
     closeChangeQuestionContainerBtn.addEventListener('click', () => {
         overlayChangeQuestionContainer.classList.remove('active')
