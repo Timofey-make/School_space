@@ -666,7 +666,7 @@ async def change_question(
             session.execute(stmt)
             session.commit()
         
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse(f"/question/{id}", status_code=303)
     
     except Exception as e:
         print(f"Ошибка при изменении вопроса: {e}")
@@ -829,7 +829,7 @@ async def report_answer(
 ):
     print(questionId, complaint_type)
     if not request.cookies.get("id"):
-        return RedirectResponse(f"/question/{questionId}", status_code=303)
+        return RedirectResponse("/login", status_code=303)
     
     with Session(init.engine) as conn:
         stmt = select(init.Reporta).where(init.Reporta.answer_id == answerId, init.Reporta.reason == complaint_type)
