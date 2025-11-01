@@ -65,12 +65,12 @@
                 </ul>
             </div>
         </section>
-        <div class="overlay" id="overlay">
+        <div class="overlay" id="overlayCreate">
             <section class="create">
                 <button class="create-close-btn" id="close">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
                 </button>
-                <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data">
+                <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data" id="formCreateQuestion">
                     <div class="create-form-text">
                         <label for="questionText">Какой у вас вопрос?</label>
                         <textarea class="form-text-textarea" name="description" id="questionText" minlength="0" maxlength="10000" required></textarea>
@@ -110,13 +110,13 @@
                         </select>
                     </div>
                     <div class="upload-container">
-                        <label class="upload-label" for="imageInput">
+                        <label class="upload-label" for="imageInputCreateQuestion">
                             <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
                             Прикрепить изображения
                         </label>
-                        <input class="visually-hidden" type="file" id="imageInput" name="images" accept="image/*" multiple>
+                        <input class="visually-hidden" type="file" id="imageInputCreateQuestion" name="images" accept="image/*" multiple>
 
-                        <ul class="preview-list" id="previewList"></ul>
+                        <ul class="preview-list" id="previewListCreateQuestion"></ul>
                     </div>
                     <button type="submit" class="btn">Создать вопрос</button>
                 </form>

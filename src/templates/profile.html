@@ -60,10 +60,10 @@
                 <button class="create-close-btn" id="close">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
                 </button>
-                <form action="/doadd" method="post" class="create-form">
+                <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data" id="formCreateQuestion">
                     <div class="create-form-text">
                         <label for="questionText">Какой у вас вопрос?</label>
-                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="1" required></textarea>
+                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="0" maxlength="10000" required></textarea>
                     </div>
                     <div class="create-form-section">
                         <select class="item-filter" name="subject">
@@ -84,7 +84,8 @@
                             <option value="ИЗО">ИЗО</option>
                             <option value="Физическая культура">Физическая культура</option>
                         </select>
-                        <select class="item-filter" id="grade-create" name="grade">
+
+                        <select class="item-filter" name="grade">
                             <option value="1" selected>1 класс</option>
                             <option value="2">2 класс</option>
                             <option value="3">3 класс</option>
@@ -99,13 +100,13 @@
                         </select>
                     </div>
                     <div class="upload-container">
-                        <label class="upload-label" for="imageInput">
+                        <label class="upload-label" for="imageInputCreateQuestion">
                             <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
                             Прикрепить изображения
                         </label>
-                        <input class="visually-hidden" type="file" id="imageInput" name="images" accept="image/*" multiple>
+                        <input class="visually-hidden" type="file" id="imageInputCreateQuestion" name="images" accept="image/*" multiple>
 
-                        <ul class="preview-list" id="previewList"></ul>
+                        <ul class="preview-list" id="previewListCreateQuestion"></ul>
                     </div>
                     <button type="submit" class="btn">Создать вопрос</button>
                 </form>
