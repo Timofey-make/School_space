@@ -654,10 +654,6 @@ async def change_question(
             if new_description.strip():
                 update_data["description"] = new_description.strip()
             
-            # Если есть новые изображения, обновляем поле image_path
-            if image_paths_str is not None:
-                update_data["image_path"] = image_paths_str
-            
             # Обновление вопроса
             stmt = update(init.Question).where(
                 init.Question.id == id
