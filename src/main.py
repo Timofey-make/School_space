@@ -776,7 +776,7 @@ async def change_answer(
 async def report_question(
     request: Request,
     questionId: str = Form(None),
-    reson: str = Form(None),  # ← исправлено: reason вместо reson
+    reson: str = Form(None),
 ):
     print(questionId, reson)
     if not request.cookies.get("id"):
@@ -842,12 +842,13 @@ async def report_answer(
                 return RedirectResponse(f"/question/{questionId}")
             
             # Создаем репорт
-            reportq = init.Reporta(
+            reporta = init.Reporta(
                 answer_id=answerId,  
                 reason=complaint_type,
+                image=question[0].image_filename, 
                 description=question[0].description,  # description из вопроса
             )
-            conn.add(reportq)
+            conn.add(reporta)
             conn.commit()
             print(f"Репорт создан для otveta {answerId}")
     
@@ -890,6 +891,7 @@ async def adminpanel(request: Request):
                 "aid": r.answer_id,
                 "reson": r.reason,
                 "text": r.description,
+                "image": r.image,
             }
             for r in report_answers
         ]

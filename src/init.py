@@ -76,9 +76,10 @@ class Reporta(Base):
     answer_id: Mapped[int]
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str]
+    image: Mapped[str] = mapped_column(String(500))
     
     def __repr__(self) -> str:
-        return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r})"
+        return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
 
 class Like(Base):
     __tablename__ = "Like_question"
