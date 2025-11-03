@@ -1,0 +1,19 @@
+<div class="header">
+        <header class="header-inner container">
+            <div class="header-top">
+                <a class="header-logo" href="/">
+                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+                </a>
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            </div>
+            
+            <div class="header-actions">
+                {% if username %}
+                    <button id="create" class="btn header-actions-create">Создать вопрос</button>
+                    <a href="/profile/{{ username }}" class="link">{{ name }}</a>
+                {% else %}
+                    <a href="/login" class="link">Войти</a>
+                {% endif %}
+            </div>
+        </header>
+    </div>

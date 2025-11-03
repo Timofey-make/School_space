@@ -8,6 +8,7 @@
 
 .profile {
     display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
@@ -42,10 +43,6 @@
     color: var(--color-red)
 }
 
-
-.profile-question {
-    width: 75%;
-}
 
 
 

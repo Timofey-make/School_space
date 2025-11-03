@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='imgs/favicon.png') }}">
     <script src="{{ url_for('static', path='js/admin.js') }}" defer></script>
 
     <title>Админ панель - Жалобы</title>
@@ -13,12 +14,10 @@
 <body>
     <div class="header">
         <header class="header-inner container">
-            <div class="header-top">
-                <a class="header-logo" href="/">
-                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
-                </a>
-                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
-            </div>
+            <a class="header-logo" href="/">
+                <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+            </a>
+            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
             
             <div class="header-actions">
                 {% if username %}
@@ -41,7 +40,6 @@
                 <input id="adminInput" class="input admin-input" type="text" name="target_username">
                 <button class="btn admin-btn" type="submit">Назначить админом</button>
             </form>
-            <p id="successMessage" class="success"></p>
             <p id="errorMessage" class="error"></p>
         </section>
         <section class="questions container">
@@ -49,15 +47,14 @@
             <ul class="questions-content-list">
             {% if questions %}
                 {% for question in questions %}
-                {{ question['images'] }}
                 <li class="questions-content-item">
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ question.qid }}</div>
                         <div class="item-header-subject">{{ question.reson }}</div>
                     </div>
-                    <div class="questions-item-body">{{ question.text }}</div>
+                    <a href="/question/{{ question.qid }}" class="questions-item-body link">{{ question.text|safe }}</a>
                     {% if question['image'] %}
-                    <div class="question-images scale" data-images="{{ question['image'] }}" id="questionImages">
+                    <div class="question-images scale" data-images="{{ question['image'] }}" id="adminQuestionImages">
                     </div>
                     <div class="image-modal" id="imageModal" onclick="closeModal()">
                         <img src="" alt="Preview">
@@ -80,7 +77,7 @@
                 {% endif %}
             </ul>
         </section>
-        <section class="questions container">
+        <section class="questions container tall-container">
             <h1 class="answers-title">Жалобы на ответы</h1>            
             <ul class="questions-content-list">
             {% if answers %}
@@ -90,7 +87,7 @@
                         <div class="item-header-name">ID: {{ answer.id }}</div>
                         <div class="item-header-subject">{{ answer.reson }}</div>
                     </div>
-                    <div class="questions-item-body">{{ answer.text }}</div>
+                    <a href="/question/{{ answer.id }}" class="questions-item-body">{{ answer.text|safe }}</a>
                     <div class="sure-delete-btns">
                         <form method="post" action="/admin/resolveanswer">
                             <input type="hidden" name="id" value="{{ answer.aid }}">
