@@ -31,7 +31,6 @@ class User(Base):
             f"min_points={self.min_points!r}, is_admin={self.is_admin!r})"
         )
 
-
 class Question(Base):
     __tablename__ = "questions"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -52,42 +51,35 @@ class Comment(Base):
     question_id: Mapped[int]
     owner: Mapped[str] = mapped_column(String(30))
     description: Mapped[str] = mapped_column(String(1000))
+    image_filename: Mapped[str] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     def __repr__(self) -> str:
-        return f"Question(id={self.id!r}, owner={self.owner!r}, question_id={self.question_id!r}, description={self.description!r}, created_at={self.created_at!r})"
-    
-class Reportq(Base):
-    __tablename__ = "ReportsQ"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    question_id: Mapped[int]
-    reason: Mapped[str] = mapped_column(String(500))
-    description: Mapped[str]
-    image = Mapped[str]
-    
-    def __repr__(self) -> str:
-        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
+        return f"Question(id={self.id!r}, owner={self.owner!r}, question_id={self.question_id!r}, description={self.description!r}, image_filename={self.image_filename!r} created_at={self.created_at!r})"
     
 class Reportq(Base):
     __tablename__ = "ReportsQ"
     __table_args__ = {'extend_existing': True}
+    
     id: Mapped[int] = mapped_column(primary_key=True)
-    question_id: Mapped[int]
+    question_id: Mapped[int] = mapped_column()
     reason: Mapped[str] = mapped_column(String(500))
-    description: Mapped[str]
-    image = Mapped[str]
+    description: Mapped[str] = mapped_column(String(1000))  # ← лучше указать длину
+    image: Mapped[str] = mapped_column(String(500))
     
     def __repr__(self) -> str:
-        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r})"
+        return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"  # ← исправлено: self.image!r
 
 class Reporta(Base):
     __tablename__ = "ReportsA"
+    __table_args__ = {'extend_existing': True}
     id: Mapped[int] = mapped_column(primary_key=True)
     answer_id: Mapped[int]
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str]
+    image: Mapped[str] = mapped_column(String(500))
     
     def __repr__(self) -> str:
-        return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r})"
+        return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
 
 class Like(Base):
     __tablename__ = "Like_question"

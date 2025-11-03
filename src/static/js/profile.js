@@ -100,50 +100,69 @@ closeBtn.addEventListener('click', () => {
     const textarea = overlayContainer.querySelector('textarea')
     if (textarea) textarea.value = ''
 
-    filesArray = []
-    previewList.innerHTML = ``
+    filesArrayCreateQuestion = []
+    previewListCreateQuestion.innerHTML = ``
 })
 
 
 
-// upload
-const imageInput = document.getElementById('imageInput')
-const previewList = document.getElementById('previewList')
-let filesArray = []
+// upload question create
+const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
+const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
+let filesArrayCreateQuestion = []
 
-imageInput.addEventListener('change', (event) => {
-    filesArray.push(...event.target.files)
-    renderPreviews()
+imageInputCreateQuestion.addEventListener('change', (event) => {
+    const newFiles = Array.from(event.target.files)
+    const MAX_FILES = 5
+    const MAX_SIZE = 3 * 1024 * 1024
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+    newFiles.forEach(file => {
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+            return
+        }
+        if (file.size > MAX_SIZE) {
+            alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+            return
+        }
+        if (filesArrayCreateQuestion.length >= MAX_FILES) {
+            alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+            return
+        }
+        filesArrayCreateQuestion.push(file)
+    })
+    renderPreviewsCreateQuestion()
 })
 
-function renderPreviews() {
-    const html = filesArray.map((file, index) => {
+function renderPreviewsCreateQuestion() {
+    const html = filesArrayCreateQuestion.map((file, index) => {
         return `<li class="file-item" data-index="${index}">${file['name']}</li>`
     }).join('')
-    previewList.innerHTML = html
+    previewListCreateQuestion.innerHTML = html
 }
 
-previewList.addEventListener('click', (e) => {
+previewListCreateQuestion.addEventListener('click', (e) => {
     const item = e.target.closest('.file-item')
     if (!item) {
         return
     }
 
     const index = item.dataset.index
-    filesArray.splice(index, 1);
-    renderPreviews();
+    filesArrayCreateQuestion.splice(index, 1);
+    renderPreviewsCreateQuestion();
 });
 
-const form = document.querySelector('.create-form');
-form.addEventListener('submit', async (e) => {
+const formCreateQuestion = document.getElementById('formCreateQuestion');
+formCreateQuestion.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData()
-    formData.append('subject', form.subject.value)
-    formData.append('grade', form.grade.value)
-    formData.append('description', form.description.value)
+    formData.append('subject', formCreateQuestion.subject.value)
+    formData.append('grade', formCreateQuestion.grade.value)
+    formData.append('description', formCreateQuestion.description.value)
 
 
-    filesArray.forEach(file => {
+    filesArrayCreateQuestion.forEach(file => {
         formData.append('images', file)
     })
 
@@ -154,7 +173,7 @@ form.addEventListener('submit', async (e) => {
         });
 
         if (response.redirected) {
-            window.location.href = response.url; // редирект при успешной отправке
+            window.location.href = response.url;
         } else {
             const text = await response.text();
             console.log(text);

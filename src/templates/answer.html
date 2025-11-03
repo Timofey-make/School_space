@@ -60,13 +60,13 @@
                 </div>
                 <div class="questions-item-header">
                     <a href="/profile/{{ result[0] }}" class="link">{{ result[1] }} ({{result[0]}})</a>
-                    <div>{{ result[2] }}</div>
-                    <div>{{ result[3] }} класс</div>
+                    <div id="questionSubject">{{ result[2] }}</div>
+                    <div id="questionGrade">{{ result[3] }} класс</div>
                     <div id="questionTime" data-question-time="{{ result[6] }}"></div>
                 </div>
-                <div class="answer-text">{{ result[4] }}</div>
+                <div id="questionContent" class="answer-text">{{ result[4] }}</div>
                 {% if images %}
-                <div class="question-images scale">
+                <div id="questionImages" class="question-images scale">
                     {% for img in images %}
                     <img src="{{ url_for('static', path=img) }}" alt="Изображение вопроса" onclick="openModal(this)">
                     {% endfor %}
@@ -75,24 +75,23 @@
                 <div class="image-modal" id="imageModal" onclick="closeModal()">
                     <img src="" alt="Preview">
                 </div>
-
             </div>
             <div class="answers">
                 <h1 class="answers-title">Ответы</h1>
                 {% if username %}
                 <div class="questions-content-item">
-                    <form action="/addcomment" method="post" class="answer-textarea" id="formAnswer">
+                    <form action="/addcomment" method="post" class="answer-textarea" id="formCreateAnswer">
                         <label for="comment">Хотите ответить?</label>
                         <input type="hidden" value="{{ result[5] }}" name="id">
                         <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1"></textarea>
                         <div class="upload-container">
-                            <label class="upload-label" for="imageInput">
+                            <label class="upload-label" for="imageInputCreateAnswer">
                                 <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
                                 Прикрепить изображения
                             </label>
-                            <input class="visually-hidden" type="file" id="imageInputAnswer" name="images" accept="image/*" multiple>
+                            <input class="visually-hidden" type="file" id="imageInputCreateAnswer" name="image" accept="image/*" multiple>
 
-                            <ul class="preview-list" id="previewListAnswer"></ul>
+                            <ul class="preview-list" id="previewListCreateAnswer"></ul>
                         </div>
                         <button type="submit" class="answer-btn btn">Ответить</button>
                     </form>                  
@@ -111,10 +110,10 @@
                 <button class="create-close-btn" id="close">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
                 </button>
-                <form action="/doadd" method="post" class="create-form">
+                <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data" id="formCreateQuestion">
                     <div class="create-form-text">
                         <label for="questionText">Какой у вас вопрос?</label>
-                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="1" required></textarea>
+                        <textarea class="form-text-textarea" name="description" id="questionText" minlength="0" maxlength="10000" required></textarea>
                     </div>
                     <div class="create-form-section">
                         <select class="item-filter" name="subject">
@@ -135,7 +134,8 @@
                             <option value="ИЗО">ИЗО</option>
                             <option value="Физическая культура">Физическая культура</option>
                         </select>
-                        <select class="item-filter" id="grade-create" name="grade">
+
+                        <select class="item-filter" name="grade">
                             <option value="1" selected>1 класс</option>
                             <option value="2">2 класс</option>
                             <option value="3">3 класс</option>
@@ -150,18 +150,19 @@
                         </select>
                     </div>
                     <div class="upload-container">
-                        <label class="upload-label" for="imageInput">
+                        <label class="upload-label" for="imageInputCreateQuestion">
                             <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
                             Прикрепить изображения
                         </label>
-                        <input class="visually-hidden" type="file" id="imageInput" name="images" accept="image/*" multiple>
+                        <input class="visually-hidden" type="file" id="imageInputCreateQuestion" name="images" accept="image/*" multiple>
 
-                        <ul class="preview-list" id="previewList"></ul>
+                        <ul class="preview-list" id="previewListCreateQuestion"></ul>
                     </div>
                     <button type="submit" class="btn">Создать вопрос</button>
                 </form>
             </section>
         </div>
+        {% if username == result[0] %}
         <div class="overlay" id="overlaySureQuestionDelete">
             <section class="sure-delete">
                 <button class="create-close-btn" id="sureCloseQuestionBtn">
@@ -183,6 +184,7 @@
                 </div>
             </section>
         </div>
+        {% endif %}
 
         <div class="overlay" id="overlaySureAnswerDelete">
             <section class="sure-delete">
@@ -206,6 +208,7 @@
             </section>
         </div>
         
+        {% if username == result[0] %}
         <div class="overlay" id="overlayChangeQuestionContainer">
             <section class="create">
                 <button class="create-close-btn" id="closeChangeQuestionContainerBtn">
@@ -267,19 +270,29 @@
                 </form>
             </section>
         </div>
+        {% endif %}
 
         <div class="overlay" id="overlayChangeAnswerContainer">
             <section class="create">
                 <button class="create-close-btn" id="closeChangeAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
                 </button>
-                <form action="/change_answer" method="post" class="create-form">
+                <form action="/change_answer" method="post" class="create-form" id="formChangeAnswer">
                     <div class="create-form-text">
                         <label for="questionText">Что изменить?</label>
                         <input id="changeAnswerOwner" type="hidden" name="owner" value="">
                         <input id="changeAnswerId" type="hidden" name="id" value="">
                         <input id="changeQuestionId" type="hidden" name="questionId" value="">
                         <textarea class="form-text-textarea" name="new_description" id="questionText" minlength="1"></textarea>
+                    </div>
+                    <div class="upload-container">
+                        <label class="upload-label" for="imageInputChangeAnswer">
+                            <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
+                            Прикрепить изображения
+                        </label>
+                        <input class="visually-hidden" type="file" id="imageInputChangeAnswer" name="images" accept="image/*" multiple>
+
+                        <ul class="preview-list" id="previewListChangeAnswer"></ul>
                     </div>
                     <button type="submit" class="btn">
                         Изменить

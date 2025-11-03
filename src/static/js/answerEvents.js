@@ -20,8 +20,8 @@ if (closeBtn) {
         const textarea = overlayContainer.querySelector('textarea')
         if (textarea) textarea.value = ''
 
-        filesArray = []
-        previewList.innerHTML = ``
+        filesArrayCreateQuestion = []
+        previewListCreateQuestion.innerHTML = ``
     })
 }
 
@@ -47,12 +47,10 @@ answersList.addEventListener('click', (e) => {
     const finishReadBtn = e.target.closest('#finishReadBtn')
 
     
-    // Обработка кнопки редактирования
     if (editBtn) {
         const container = editBtn.closest('.questions-content-item')
                             .querySelector('.question-edit-container');
         
-        // Закрываем все активные контейнеры кроме текущего
         document.querySelectorAll('.question-edit-container.active')
                 .forEach(active => {
                     if (active !== container) {
@@ -65,7 +63,6 @@ answersList.addEventListener('click', (e) => {
         return;
     }
     
-    // Обработка кнопки жалобы
     if (reportAnswerBtn) {
         const overlayReportAnswerContainer = document.getElementById('overlayReportAnswerContainer');
         const closeReportAnswerContainerBtn = document.getElementById('closeReportAnswerContainerBtn');
@@ -81,7 +78,6 @@ answersList.addEventListener('click', (e) => {
             
 
             
-            // Убираем дублирование обработчиков
             closeReportAnswerContainerBtn.onclick = () => {
                 overlayReportAnswerContainer.classList.remove('active');
             };
@@ -123,6 +119,9 @@ answersList.addEventListener('click', (e) => {
             changeAnswerOwner.value = changeAnswerBtn.dataset.owner
             changeAnswerId.value = changeAnswerBtn.dataset.id
             changeQuestionId.value = changeAnswerBtn.dataset.questionid
+
+
+            
 
             closeChangeAnswerContainerBtn.addEventListener('click', () => {
                 overlayChangeAnswerContainer.classList.remove('active')
@@ -173,6 +172,32 @@ if (deleteQuestionBtn && overlaySureQuestionDelete && sureCancelQuestionBtn && s
         overlaySureQuestionDelete.classList.remove('active')
     })
 }
+async function urlToFile(url, filename, mimeType) {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new File([blob], filename, { type: mimeType || blob.type });
+}
+
+async function getFilesFromImages(nodeList) {
+  const files = [];
+
+  for (let i = 0; i < nodeList.length; i++) {
+    const img = nodeList[i];
+    const url = img.src;
+
+
+    const decodedUrl = decodeURIComponent(url);
+    const filename = decodedUrl.split('/').pop().split('?')[0];
+
+    const response = await fetch(url);
+    const blob = await response.blob();
+
+    const file = new File([blob], filename, { type: blob.type });
+    files.push(file);
+  }
+
+  return files;
+}
 
 
 const changeQuestionBtn = document.getElementById('changeQuestionBtn')
@@ -181,6 +206,19 @@ const closeChangeQuestionContainerBtn = document.getElementById('closeChangeQues
 if (changeQuestionBtn && overlayChangeQuestionContainer && closeChangeQuestionContainerBtn) {
     changeQuestionBtn.addEventListener('click', () => {
         overlayChangeQuestionContainer.classList.add('active')
+        formChangeQuestion.new_description.value = document.getElementById('questionContent').innerHTML
+        formChangeQuestion.subject.value = document.getElementById('questionSubject').innerHTML
+        formChangeQuestion.grade.value = document.getElementById('questionGrade').innerHTML.split(' ')[0]
+        images = document.getElementById('questionImages')
+        if (images) {
+            images = images.querySelectorAll('img')
+            filesArrayChangeQuestion = []
+            previewListChangeQuestion.innerHTML = ``
+        }
+        getFilesFromImages(images).then(files => {
+            filesArrayChangeQuestion = files
+            renderPreviewsChangeQuestion()
+        });
     })
     closeChangeQuestionContainerBtn.addEventListener('click', () => {
         overlayChangeQuestionContainer.classList.remove('active')
@@ -192,6 +230,9 @@ if (changeQuestionBtn && overlayChangeQuestionContainer && closeChangeQuestionCo
 
         const textarea = overlayChangeQuestionContainer.querySelector('textarea')
         if (textarea) textarea.value = ''
+
+        filesArrayChangeQuestion = []
+        previewListChangeQuestion.innerHTML = ``
     })
 }
 
@@ -205,61 +246,326 @@ if (reportQuestionBtn && overlayReportQuestionContainer) {
     })
     closeReportQuestionContainerBtn.addEventListener('click', () => {
         overlayReportQuestionContainer.classList.remove('active')
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+        });
     })
 }
 
 // Поле ответа
 const textarea = document.getElementById('answerTextArea')
-textarea.addEventListener("input", () => {
-    textarea.style.height = "auto"
-    textarea.style.height = Math.min(textarea.scrollHeight, 1000) + "px";
-});
+if (textarea) {
+    textarea.addEventListener("input", () => {
+        textarea.style.height = "auto"
+        textarea.style.height = Math.min(textarea.scrollHeight, 1000) + "px";
+    });
+} 
 
-// upload
-const imageInput = document.getElementById('imageInput')
-const previewList = document.getElementById('previewList')
-let filesArray = []
 
-imageInput.addEventListener('change', (event) => {
-    filesArray.push(...event.target.files)
-    renderPreviews()
-})
-
-function renderPreviews() {
-    const html = filesArray.map((file, index) => {
-        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-    }).join('')
-    previewList.innerHTML = html
+function openModal(img) {
+    const modal = document.getElementById('imageModal')
+    const modalImg = modal.querySelector('img')
+    modalImg.src = img.src
+    modal.classList.add('active')
 }
 
-previewList.addEventListener('click', (e) => {
+function closeModal() {
+    document.getElementById('imageModal').classList.remove('active');
+}
+
+// upload question create
+const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
+const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
+let filesArrayCreateQuestion = []
+
+if (imageInputCreateQuestion && previewListCreateQuestion) {
+    imageInputCreateQuestion.addEventListener('change', (event) => {
+        const newFiles = Array.from(event.target.files)
+        const MAX_FILES = 5
+        const MAX_SIZE = 3 * 1024 * 1024
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+        newFiles.forEach(file => {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                return
+            }
+            if (file.size > MAX_SIZE) {
+                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                return
+            }
+            if (filesArrayCreateQuestion.length >= MAX_FILES) {
+                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                return
+            }
+            filesArrayCreateQuestion.push(file)
+        })
+        renderPreviewsCreateQuestion()
+    })
+
+    function renderPreviewsCreateQuestion() {
+        const html = filesArrayCreateQuestion.map((file, index) => {
+            return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+        }).join('')
+        previewListCreateQuestion.innerHTML = html
+    }
+
+    previewListCreateQuestion.addEventListener('click', (e) => {
+        const item = e.target.closest('.file-item')
+        if (!item) {
+            return
+        }
+
+        const index = item.dataset.index
+        filesArrayCreateQuestion.splice(index, 1);
+        renderPreviewsCreateQuestion();
+    });
+
+    const formCreateQuestion = document.getElementById('formCreateQuestion');
+    formCreateQuestion.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData()
+        formData.append('subject', formCreateQuestion.subject.value)
+        formData.append('grade', formCreateQuestion.grade.value)
+        formData.append('description', formCreateQuestion.description.value)
+
+
+        filesArrayCreateQuestion.forEach(file => {
+            formData.append('images', file)
+        })
+
+        try {
+            const response = await fetch('/doadd', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const text = await response.text();
+                console.log(text);
+            }
+        } catch (err) {
+            console.error('Ошибка отправки формы:', err);
+        }
+    });
+}
+
+
+
+
+// change question upload
+const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
+const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
+let filesArrayChangeQuestion = []
+
+if (imageInputChangeQuestion && previewListChangeQuestion) {
+    imageInputChangeQuestion.addEventListener('change', (event) => {
+        const newFiles = Array.from(event.target.files)
+        const MAX_FILES = 5
+        const MAX_SIZE = 3 * 1024 * 1024
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+        newFiles.forEach(file => {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                return
+            }
+            if (file.size > MAX_SIZE) {
+                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                return
+            }
+            if (filesArrayChangeQuestion.length >= MAX_FILES) {
+                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                return
+            }
+            filesArrayChangeQuestion.push(file)
+        })
+        renderPreviewsChangeQuestion()
+    })
+
+    function renderPreviewsChangeQuestion() {
+        const html = filesArrayChangeQuestion.map((file, index) => {
+            return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+        }).join('')
+        previewListChangeQuestion.innerHTML = html
+    }
+
+    previewListChangeQuestion.addEventListener('click', (e) => {
+        const item = e.target.closest('.file-item')
+        if (!item) {
+            return
+        }
+
+        const index = item.dataset.index
+        filesArrayChangeQuestion.splice(index, 1);
+        renderPreviewsChangeQuestion();
+    });
+
+    const formChangeQuestion = document.getElementById('formChangeQuestion');
+    formChangeQuestion.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData()
+        formData.append('subject', formChangeQuestion.subject.value)
+        formData.append('grade', formChangeQuestion.grade.value)
+        formData.append('new_description', formChangeQuestion.new_description.value)
+        formData.append('id', formChangeQuestion.id.value)
+
+
+        filesArrayChangeQuestion.forEach(file => {
+            console.log(file)
+            formData.append('images', file)
+        })
+        console.log(formData)
+
+
+        try {
+            const response = await fetch('/change', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const text = await response.text();
+                console.log(text);
+            }
+        } catch (err) {
+            console.error('Ошибка отправки формы:', err);
+        }
+    });
+}
+
+
+// answer upload create
+const imageInputCreateAnswer = document.getElementById('imageInputCreateAnswer')
+const previewListCreateAnswer = document.getElementById('previewListCreateAnswer')
+let filesArrayCreateAnswer = []
+
+if (imageInputCreateAnswer && previewListCreateAnswer) {
+    imageInputCreateAnswer.addEventListener('change', (event) => {
+        const newFiles = Array.from(event.target.files)
+        const MAX_FILES = 5
+        const MAX_SIZE = 3 * 1024 * 1024
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+        newFiles.forEach(file => {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                return
+            }
+            if (file.size > MAX_SIZE) {
+                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                return
+            }
+            if (filesArrayCreateAnswer.length >= MAX_FILES) {
+                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                return
+            }
+            filesArrayCreateAnswer.push(file)
+        })
+        renderPreviewsCreateAnswer()
+    })
+
+    function renderPreviewsCreateAnswer() {
+        const html = filesArrayCreateAnswer.map((file, index) => {
+            return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+        }).join('')
+        previewListCreateAnswer.innerHTML = html
+    }
+
+    previewListCreateAnswer.addEventListener('click', (e) => {
+        const item = e.target.closest('.file-item')
+        if (!item) {
+            return
+        }
+
+        const index = item.dataset.index
+        filesArrayCreateAnswer.splice(index, 1);
+        renderPreviewsCreateAnswer();
+    });
+
+    const formCreateAnswer = document.getElementById('formCreateAnswer');
+    formCreateAnswer.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formDataAnswer = new FormData()
+        formDataAnswer.append('comment', formCreateAnswer.comment.value)
+        formDataAnswer.append('id', formCreateAnswer.id.value)
+
+        filesArrayCreateAnswer.forEach(file => {
+            formDataAnswer.append('images', file)
+        })
+
+
+        try {
+            const response = await fetch('/addcomment', {
+                method: 'POST',
+                body: formDataAnswer
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else {
+                const text = await response.text();
+                console.log(text);
+            }
+        } catch (err) {
+            console.error('Ошибка отправки формы:', err);
+        }
+    });
+}
+
+
+// change answer upload
+const imageInputChangeAnswer = document.getElementById('imageInputChangeAnswer')
+const previewListChangeAnswer = document.getElementById('previewListChangeAnswer')
+let filesArrayChangeAnswer = []
+
+imageInputChangeAnswer.addEventListener('change', (event) => {
+    filesArrayChangeAnswer.push(...event.target.files)
+    renderPreviewsChangeAnswer()
+})
+
+
+function renderPreviewsChangeAnswer() {
+    const html = filesArrayChangeAnswer.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListChangeAnswer.innerHTML = html
+}
+
+previewListChangeAnswer.addEventListener('click', (e) => {
     const item = e.target.closest('.file-item')
     if (!item) {
         return
     }
 
     const index = item.dataset.index
-    filesArray.splice(index, 1);
-    renderPreviews();
+    filesArrayChangeAnswer.splice(index, 1);
+    renderPreviewsChangeAnswer();
 });
 
-const form = document.querySelector('.create-form');
-form.addEventListener('submit', async (e) => {
+const formChangeAnswer = document.getElementById('formChangeAnswer');
+formChangeAnswer.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData()
-    formData.append('subject', form.subject.value)
-    formData.append('grade', form.grade.value)
-    formData.append('description', form.description.value)
+    const formDataAnswer = new FormData()
+    formDataAnswer.append('comment', formChangeAnswer.new_description.value)
+    formDataAnswer.append('owner', formChangeAnswer.owner.value)
+    formDataAnswer.append('id', formChangeAnswer.id.value)
+    formDataAnswer.append('questionId', formChangeAnswer.questionId.value)
 
-
-    filesArray.forEach(file => {
-        formData.append('images', file)
+    filesArrayChangeAnswer.forEach(file => {
+        console.log(file)
+        formDataAnswer.append('images', file)
     })
 
+
     try {
-        const response = await fetch('/doadd', {
+        const response = await fetch('/change_answer', {
             method: 'POST',
-            body: formData
+            body: formDataAnswer
         });
 
         if (response.redirected) {
@@ -274,76 +580,16 @@ form.addEventListener('submit', async (e) => {
 });
 
 
-function openModal(img) {
-    const modal = document.getElementById('imageModal')
-    const modalImg = modal.querySelector('img')
-    modalImg.src = img.src
-    modal.classList.add('active')
-}
+window.addEventListener('DOMContentLoaded', () => {
+    const selects = document.querySelectorAll('select')
+    selects.forEach((select) => {
+        select.selectedIndex = 0;
+    })
+    document.getElementById('search').value = ''
+    document.getElementById('questionText').value = ''
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false;
+    });
+    document.getElementById('answerTextArea').value = ''
+});
 
-function closeModal() {
-    document.getElementById('imageModal').classList.remove('active');
-}
-
-
-// change question upload
-// const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
-// const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
-// let filesArrayChangeQuestion = []
-
-// imageInputChangeQuestion.addEventListener('change', (event) => {
-//     filesArrayChangeQuestion.push(...event.target.files)
-//     renderPreviewsChangeQuestion()
-// })
-
-// function renderPreviewsChangeQuestion() {
-//     const html = filesArrayChangeQuestion.map((file, index) => {
-//         return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-//     }).join('')
-//     previewListChangeQuestion.innerHTML = html
-// }
-
-// previewListChangeQuestion.addEventListener('click', (e) => {
-//     const item = e.target.closest('.file-item')
-//     if (!item) {
-//         return
-//     }
-
-//     const index = item.dataset.index
-//     filesArrayChangeQuestion.splice(index, 1);
-//     renderPreviewsChangeQuestion();
-// });
-
-// const formChangeQuestion = document.getElementById('formChangeQuestion');
-// formChangeQuestion.addEventListener('submit', async (e) => {
-//     e.preventDefault();
-//     const formData = new FormData()
-//     formData.append('subject', formChangeQuestion.subject.value)
-//     formData.append('grade', formChangeQuestion.grade.value)
-//     formData.append('new_description', formChangeQuestion.new_description.value)
-//     formData.append('id', formChangeQuestion.id.value)
-
-
-//     filesArrayChangeQuestion.forEach(file => {
-//         console.log(file)
-//         formData.append('images', file)
-//     })
-//     console.log(formData)
-
-
-//     try {
-//         const response = await fetch('/change', {
-//             method: 'POST',
-//             body: formData
-//         });
-
-//         if (response.redirected) {
-//             window.location.href = response.url;
-//         } else {
-//             const text = await response.text();
-//             console.log(text);
-//         }
-//     } catch (err) {
-//         console.error('Ошибка отправки формы:', err);
-//     }
-// });

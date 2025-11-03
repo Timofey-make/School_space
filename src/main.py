@@ -6,7 +6,7 @@ from urllib.parse import unquote
 from datetime import datetime
 from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
-
+import time
 from requests import session
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -220,6 +220,7 @@ async def get_answers():
             init.Comment.owner,
             init.Comment.description,
             init.Comment.created_at,
+            init.Comment.image_filename,
         ).order_by(init.Comment.id.desc())
         data = conn.execute(stmt).fetchall()
 
@@ -234,6 +235,7 @@ async def get_answers():
                 "username": row.owner,
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
+                "images": row.image_filename,
             })
         return JSONResponse(content=questions)
 
@@ -446,33 +448,71 @@ async def question_page(request: Request, note_id: int):
         print(f"Ошибка при загрузке страницы вопроса: {e}")
         return RedirectResponse(url="/?error=server_error", status_code=303)
 
-
 @app.post("/addcomment", tags=["Добавить комментарий"])
 async def addcomment(
     request: Request,
     comment: str = Form(...),
     id: int = Form(...),
+    images: list[UploadFile] = File(None),
 ):
-    # Убираем пробелы и переводы строк
-    clean_comment = comment.strip()
+    try:
+        # Убираем пробелы и переводы строк
+        clean_comment = comment.strip()
 
-    # Если комментарий пустой после очистки — не добавляем
-    if not clean_comment:
+        # Если комментарий пустой после очистки и нет картинок — не добавляем
+        if not clean_comment and (not images or not any(img.filename for img in images)):
+            return RedirectResponse(url=f'/question/{id}', status_code=303)
+
+        saved_paths = []
+        
+        # Обрабатываем загруженные картинки, если они есть
+        if images:
+            # Создаем папку для изображений комментариев
+            save_dir = os.path.join(static_dir, "images", "comments")
+            os.makedirs(save_dir, exist_ok=True)
+
+            for image in images:
+                if not image.filename:
+                    continue
+                
+                # Проверяем, что это действительно изображение
+                if not image.content_type.startswith('image/'):
+                    continue
+                
+                # Генерируем уникальное имя файла
+                ext = image.filename.split('.')[-1]
+                filename = f"comment_{uuid.uuid4()}.{ext}"
+                filepath = os.path.join(save_dir, filename)
+                
+                # Сохраняем файл
+                with open(filepath, "wb") as f:
+                    f.write(await image.read())
+                
+                # Добавляем путь в список
+                saved_paths.append(f"/static/images/comments/{filename}")
+
+        # Преобразуем список путей в строку для хранения в БД
+        image_paths_str = ",".join(saved_paths) if saved_paths else None
+
+        with Session(init.engine) as conn:
+            comments = init.Comment(
+                question_id=id,
+                owner=function.decrypt(request.cookies.get("username")),
+                description=clean_comment,
+                image_filename=image_paths_str,  # Сохраняем пути к изображениям
+            )
+            conn.add(comments)
+            conn.commit()
+        
+        # Повышение уровня пользователя
+        function.upgrade(request.cookies.get("id"))
+        function.upgrade_title(request.cookies.get("id"))
+
         return RedirectResponse(url=f'/question/{id}', status_code=303)
-
-    with Session(init.engine) as conn:
-        comments = init.Comment(
-            question_id=id,
-            owner=function.decrypt(request.cookies.get("username")),
-            description=clean_comment,
-        )
-        conn.add(comments)
-        conn.commit()
-    function.upgrade(request.cookies.get("id"))
-    function.upgrade_title(request.cookies.get("id"))
-
-
-    return RedirectResponse(url=f'/question/{id}', status_code=303)
+    
+    except Exception as e:
+        print(f"Ошибка при добавлении комментария: {e}")
+        return RedirectResponse(url=f'/question/{id}?error=server_error', status_code=303)
     
 @app.get("/profile/{username}", tags=["Профиль"])
 async def profile(request: Request, username: str):
@@ -551,40 +591,82 @@ async def delete_question(
 @app.post("/change", tags=["Изменение вопроса"])
 async def change_question(
     request: Request,
-    description: str = Form(...),
-    new_description: str = Form(...),
-    owner: str = Form(...),
     subject: str = Form(...),
     grade: str = Form(...),
+    new_description: str = Form(...),
     id: int = Form(...),
+    images: list[UploadFile] = File(None)
 ):
-    current_user = function.decrypt(request.cookies.get("username"))
-    if current_user == owner:
-        print(description)
+    try:
+        current_user = function.decrypt(request.cookies.get("username"))
+        
         with Session(init.engine) as session:
-            if new_description:
-                # Обновление вопроса
-                stmt = update(init.Question).where(
-                    and_(
-                        init.Question.description == description,
-                        init.Question.owner == current_user,
-                        init.Question.id == id,
-                    )
-                ).values(description=new_description, grade=grade, subject=subject)
-            else:
-                stmt = update(init.Question).where(
-                    and_(
-                        init.Question.description == description,
-                        init.Question.owner == current_user,
-                        init.Question.id == id,
-                    )
-                ).values(grade=grade, subject=subject)
+            # Получаем текущий вопрос для проверки владельца
+            question = session.query(init.Question).filter(
+                init.Question.id == id
+            ).first()
+            
+            if not question or question.owner != current_user:
+                return RedirectResponse("/", status_code=303)
+            
+            # Обрабатываем изображения только если они переданы
+            image_paths_str = None
+            
+            if images and any(image.filename for image in images):
+                saved_paths = []
+                
+                # Создаем папку для изображений, если не существует
+                save_dir = os.path.join(static_dir, "images")
+                os.makedirs(save_dir, exist_ok=True)
+                
+                # Обрабатываем каждое изображение
+                for image in images:
+                    if not image.filename:
+                        continue
+                    
+                    # Проверяем тип файла
+                    if not image.content_type.startswith("image/"):
+                        continue
+                    
+                    # Генерируем уникальное имя файла
+                    ext = image.filename.split('.')[-1]
+                    filename = f"{uuid.uuid4()}.{ext}"
+                    filepath = os.path.join(save_dir, filename)
+                    
+                    # Сохраняем файл
+                    with open(filepath, "wb") as f:
+                        f.write(await image.read())
+                    
+                    # Добавляем путь в список
+                    saved_paths.append(f"/static/images/{filename}")
+                
+                # Обновляем пути к изображениям только если загружены новые
+                if saved_paths:
+                    image_paths_str = ",".join(saved_paths)
+            
+            # Подготавливаем данные для обновления
+            update_data = {
+                "grade": grade,
+                "subject": subject
+            }
+            
+            # Обновляем описание только если оно не пустое
+            if new_description.strip():
+                update_data["description"] = new_description.strip()
+            
+            # Обновление вопроса
+            stmt = update(init.Question).where(
+                init.Question.id == id
+            ).values(**update_data)
+            
             session.execute(stmt)
             session.commit()
         
-        return RedirectResponse("/", status_code=303)    
-    else:
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse(f"/question/{id}", status_code=303)
+    
+    except Exception as e:
+        print(f"Ошибка при изменении вопроса: {e}")
+        return RedirectResponse(url="/?error=server_error", status_code=303)
 
 @app.post("/delete_answer", tags=["Удаление вопроса"])
 async def delete_answer(
@@ -610,33 +692,85 @@ async def delete_answer(
     else:
         return RedirectResponse("/", status_code=303)
 
-@app.post("/change_answer", tags=["Изменение вопроса"])
+@app.post("/change_answer", tags=["Изменение комментария"])
 async def change_answer(
     request: Request,
-    new_description: str = Form(...),
+    comment: str = Form(...),  # Изменили new_description на comment
     owner: str = Form(...),
     id: int = Form(...),
     questionId: int = Form(...),
+    images: list[UploadFile] = File(None),
 ):
-    print(new_description, owner, id)
-    current_user = function.decrypt(request.cookies.get("username"))
-    if current_user == owner:
-        if new_description:
-            with Session(init.engine) as session:
-                stmt = update(init.Comment).where(
-                        and_(
-                            init.Comment.owner == current_user,
-                            init.Comment.id == id,
-                        )
-                    ).values(description=new_description)
-            session.execute(stmt)
-            session.commit()
-            
-            return RedirectResponse(f"/question/{questionId}", status_code=303) 
-        else:
+    try:
+        current_user = function.decrypt(request.cookies.get("username"))
+        if current_user != owner:
             return RedirectResponse(f"/question/{questionId}", status_code=303)
-    else:
+        
+        with Session(init.engine) as session:
+            # Получаем текущий комментарий
+            comment_obj = session.query(init.Comment).filter(
+                init.Comment.id == id,
+                init.Comment.owner == current_user
+            ).first()
+            
+            if not comment_obj:
+                return RedirectResponse(f"/question/{questionId}", status_code=303)
+            
+            # Подготавливаем данные для обновления
+            update_data = {}
+            
+            # Обновляем описание только если оно не пустое
+            if comment.strip():  # Используем comment вместо new_description
+                update_data["description"] = comment.strip()
+            
+            # Обрабатываем изображения только если они переданы
+            if images and any(image.filename for image in images):
+                saved_paths = []
+                
+                # Создаем папку для изображений комментариев
+                save_dir = os.path.join(static_dir, "images", "comments")
+                os.makedirs(save_dir, exist_ok=True)
+
+                # Обрабатываем каждое изображение
+                for image in images:
+                    if not image.filename:
+                        continue
+                    
+                    # Проверяем тип файла
+                    if not image.content_type.startswith("image/"):
+                        continue
+                    
+                    # Генерируем уникальное имя файла
+                    ext = image.filename.split('.')[-1]
+                    filename = f"comment_{uuid.uuid4()}.{ext}"
+                    filepath = os.path.join(save_dir, filename)
+                    
+                    # Сохраняем файл
+                    with open(filepath, "wb") as f:
+                        f.write(await image.read())
+                    
+                    # Добавляем путь в список
+                    saved_paths.append(f"/static/images/comments/{filename}")
+                
+                # Обновляем пути к изображениям только если загружены новые
+                if saved_paths:
+                    update_data["image_filename"] = ",".join(saved_paths)
+            
+            # Если есть что обновлять
+            if update_data:
+                stmt = update(init.Comment).where(
+                    init.Comment.id == id,
+                    init.Comment.owner == current_user
+                ).values(**update_data)
+                
+                session.execute(stmt)
+                session.commit()
+        
         return RedirectResponse(f"/question/{questionId}", status_code=303)
+    
+    except Exception as e:
+        print(f"Ошибка при изменении комментария: {e}")
+        return RedirectResponse(f"/question/{questionId}?error=server_error", status_code=303)
 
 @app.post("/report_question", tags=["репорты"])
 async def report_question(
@@ -646,28 +780,35 @@ async def report_question(
 ):
     print(questionId, reson)
     if not request.cookies.get("id"):
-        return RedirectResponse(f"/login", status_code=303)
+        return RedirectResponse("/login", status_code=303)
     
     with Session(init.engine) as conn:
-        stmt = select(init.Reportq).where(init.Reportq.question_id == questionId, init.Reportq.reason == reson)
+        # Проверяем, существует ли уже такой репорт
+        stmt = select(init.Reportq).where(
+            init.Reportq.question_id == questionId, 
+            init.Reportq.reason == reson
+        )
         data = conn.execute(stmt).first()
+        
         if data:
             return RedirectResponse(f"/question/{questionId}", status_code=303)
         else:
-        # ПРАВИЛЬНО: получаем вопрос из таблицы Question
+            # Получаем вопрос из таблицы Question
             stmt = select(init.Question).where(init.Question.id == questionId)
-            question = conn.execute(stmt).first()
+            question_result = conn.execute(stmt).first()
             
-            if not question:
+            if not question_result:
                 print(f"Вопрос с ID {questionId} не найден")
                 return RedirectResponse(f"/question/{questionId}")
             
-            # Создаем репорт
+            question = question_result[0]  # получаем объект Question
+            
+            # Создаем репорт - используем правильные поля из модели Question
             reportq = init.Reportq(
                 question_id=questionId,  
                 reason=reson,
-                description=question[0].description,
-                image=question[0].image_path,  # description из вопроса
+                description=question.description,  # ← это поле есть в Question
+                image=question.image_path if question.image_path else ""  # ← используем image_path из Question
             )
             conn.add(reportq)
             conn.commit()
@@ -684,7 +825,7 @@ async def report_answer(
 ):
     print(questionId, complaint_type)
     if not request.cookies.get("id"):
-        return RedirectResponse(f"/question/{questionId}", status_code=303)
+        return RedirectResponse("/login", status_code=303)
     
     with Session(init.engine) as conn:
         stmt = select(init.Reporta).where(init.Reporta.answer_id == answerId, init.Reporta.reason == complaint_type)
@@ -701,12 +842,13 @@ async def report_answer(
                 return RedirectResponse(f"/question/{questionId}")
             
             # Создаем репорт
-            reportq = init.Reporta(
+            reporta = init.Reporta(
                 answer_id=answerId,  
                 reason=complaint_type,
+                image=question[0].image_filename, 
                 description=question[0].description,  # description из вопроса
             )
-            conn.add(reportq)
+            conn.add(reporta)
             conn.commit()
             print(f"Репорт создан для otveta {answerId}")
     
@@ -749,6 +891,7 @@ async def adminpanel(request: Request):
                 "aid": r.answer_id,
                 "reson": r.reason,
                 "text": r.description,
+                "image": r.image,
             }
             for r in report_answers
         ]
