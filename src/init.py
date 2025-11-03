@@ -64,7 +64,7 @@ class Reportq(Base):
     question_id: Mapped[int] = mapped_column()
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(String(1000))  # ← лучше указать длину
-    image: Mapped[str] = mapped_column(String(500))
+    image: Mapped[str] = mapped_column(String(500), nullable=True)
     
     def __repr__(self) -> str:
         return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"  # ← исправлено: self.image!r
@@ -76,7 +76,7 @@ class Reporta(Base):
     answer_id: Mapped[int]
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str]
-    image: Mapped[str] = mapped_column(String(500))
+    image: Mapped[str] = mapped_column(String(500), nullable=True)
     
     def __repr__(self) -> str:
         return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
