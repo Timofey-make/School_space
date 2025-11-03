@@ -6,18 +6,17 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='imgs/favicon.png') }}">
     <script src="{{ url_for('static', path='js/questions.js') }}" defer></script>
     <title>Вопросы</title>
 </head>
 <body>
     <div class="header">
         <header class="header-inner container">
-            <div class="header-top">
-                <a class="header-logo" href="/">
-                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
-                </a>
-                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
-            </div>
+            <a class="header-logo" href="/">
+                <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+            </a>
+            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
             
             <div class="header-actions">
                 {% if username %}
@@ -31,7 +30,7 @@
     </div>
     <main class="content">
         <h1 class="visually-hidden">Вопросы</h1>
-        <section class="questions container">
+        <section class="questions container tall-container">
             <div class="questions-item-filter">
                 <select class="item-filter" id="subject">
                     <option value="all" selected>Все предметы</option>

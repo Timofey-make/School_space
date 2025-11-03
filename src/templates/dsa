@@ -12,14 +12,20 @@ body {
     align-items: center;
     padding-top: 15px;
     padding-bottom: 15px;
-    column-gap: 20px;
+    column-gap: 40px;
 }
-.header-logo img {
-    width: 70px;
-}
+
 
 .search-input {
     width: 100%;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    gap: 15px;
 }
 
 .header-actions {
@@ -269,23 +275,16 @@ body {
 @media (max-width: 767px) {
     /* header */
     .header-inner {
-        flex-wrap: wrap;
-        row-gap: 10px;    
+        flex-direction: column;
+        align-items: flex-start;
+        row-gap: 10px;
     }
-    .header-logo {
+    .header-actions-create {
         order: 1;
     }
-
     .header-actions {
-        order: 2;   
-    }
-    .header-logo img {
-        width: 60px;
-    }
-
-    .search-input {
-        order: 3;
         width: 100%;
+        justify-content: space-between; /* кнопки слева */
     }
     /* questions */
     .questions-filter-list {

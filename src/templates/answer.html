@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='imgs/favicon.png') }}">
     <script src="{{ url_for('static', path='js/answerRender.js') }}" defer></script>
     <script src="{{ url_for('static', path='js/answerEvents.js') }}" defer></script>
     <title>Ответ</title>
@@ -13,12 +14,10 @@
 <body>
     <div class="header">
         <header class="header-inner container">
-            <div class="header-top">
-                <a class="header-logo" href="/">
-                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
-                </a>
-                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
-            </div>
+            <a class="header-logo" href="/">
+                <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+            </a>
+            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
             
             <div class="header-actions">
                 {% if username %}
@@ -64,7 +63,7 @@
                     <div id="questionGrade">{{ result[3] }} класс</div>
                     <div id="questionTime" data-question-time="{{ result[6] }}"></div>
                 </div>
-                <div id="questionContent" class="answer-text">{{ result[4] }}</div>
+                <div id="questionContent" class="answer-text">{{ result[4]|safe }}</div>
                 {% if images %}
                 <div id="questionImages" class="question-images scale">
                     {% for img in images %}

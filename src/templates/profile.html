@@ -8,17 +8,16 @@
     <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/profile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/answer.css') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', path='imgs/favicon.png') }}">
     <script src="{{ url_for('static', path='js/profile.js') }}" defer></script>
 </head>
 <body>
     <div class="header">
         <header class="header-inner container">
-            <div class="header-top">
-                <a class="header-logo" href="/">
-                    <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
-                </a>
-                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
-            </div>
+            <a class="header-logo" href="/">
+                <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
+            </a>
+            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
             
             <div class="header-actions">
                 {% if username %}
@@ -31,25 +30,24 @@
         </header>
     </div>
     <main>
-        <h1 class="visually-hidden">Профиль</h1>
         <section class="profile-container container">
             <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
                 <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
             </a>
+            <div class="question">
+                <div class="profile-name">{{ account[1] }} ({{ account[2] }})</div>
+                <div class="profile-additional">ID: {{ account[0] }}</div>
+                <div class="profile-additional" style="color: {{ account[4] }};">{{ account[3] }}</div>
+
+                {% if username == account[2] and (account[5] or account[0] == 1)%}
+                <a class="link admin-link" href="/admin/panel">Перейти в админ-панель</a>
+                {% endif %}
+                {% if username == account[2] %}
+                <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
+                {% endif %}
+            </div>
             <div class="profile">
-                <div class="profile-info">
-                    <div class="profile-name">{{ account[1] }} ({{ account[2] }})</div>
-                    <div class="profile-additional">ID: {{ account[0] }}</div>
-                    <div class="profile-additional" style="color: {{ account[4] }};">{{ account[3] }}</div>
-
-                    {% if username == account[2] and (account[5] or account[0] == 1)%}
-                    <a class="link admin-link" href="/admin/panel">Перейти в админ-панель</a>
-                    {% endif %}
-                    {% if username == account[2] %}
-                    <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
-                    {% endif %}
-
-                </div>
+                <h1 class="answers-title">Вопросы пользователя</h1>
                 <div class="profile-question" id="profileQuestionsContainer" data-username="{{ account[2] }}">
                     {{ questions }}
                 </div>
