@@ -82,6 +82,7 @@
             <ul class="questions-content-list">
             {% if answers %}
                 {% for answer in answers %}
+                {{ answer }}
                 <li class="questions-content-item">
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ answer.id }}</div>
