@@ -121,6 +121,7 @@
 
 .answers-title {
     text-align: center;
+    font-size: clamp(30px, 2.38vw,35px);
 }
 
 .answer-textarea {
