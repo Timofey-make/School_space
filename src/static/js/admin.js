@@ -45,7 +45,7 @@ closeBtn.addEventListener('click', () => {
     previewListCreateQuestion.innerHTML = ``
 })
 
-// render images admin
+// render images question admin
 adminQuestionImages = document.getElementById('adminQuestionImages')
 if (adminQuestionImages) {
     let srcImages = adminQuestionImages.dataset.images.split(',')
@@ -53,6 +53,15 @@ if (adminQuestionImages) {
         return `<img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">`
     }).join('')
     adminQuestionImages.innerHTML = srcImages
+}
+// render images answer admin
+adminAnswerImages = document.getElementById('adminAnswerImages')
+if (adminAnswerImages) {
+    let srcImages = adminAnswerImages.dataset.images.split(',')
+    srcImages = srcImages.map((src) => {
+        return `<img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">`
+    }).join('')
+    adminAnswerImages.innerHTML = srcImages
 }
 
 
