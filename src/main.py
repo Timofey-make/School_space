@@ -24,7 +24,6 @@ import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-from markupsafe import escape
 
 app = FastAPI()
 from fastapi.staticfiles import StaticFiles
@@ -138,7 +137,7 @@ import uuid
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-import init, function
+import init, function  # твои модули
 
 
 @app.post("/doadd", tags=["Добавить вопрос"])
@@ -157,8 +156,10 @@ async def doadd(
         saved_paths = []
 
         # Создаем папку для изображений, если не существует
+        # вместо "./SchoolProject/src/static/images"
         save_dir = os.path.join(static_dir, "images")
         os.makedirs(save_dir, exist_ok=True)
+
 
         # Обрабатываем каждое изображение
         if images:
@@ -185,9 +186,6 @@ async def doadd(
         # Можно хранить пути как JSON, список или строку через запятую
         image_paths_str = ",".join(saved_paths) if saved_paths else None
 
-        # Экранируем HTML в description
-        description_clean = escape(description.strip())
-
         # Добавляем запись в базу
         with Session(init.engine) as conn:
             question = init.Question(
@@ -195,7 +193,7 @@ async def doadd(
                 owner_name=function.decrypt(request.cookies.get("name")),
                 subject=subject,
                 grade=grade,
-                description=description_clean,
+                description=description.strip(),
                 image_path=image_paths_str
             )
             conn.add(question)
@@ -450,7 +448,6 @@ async def question_page(request: Request, note_id: int):
         print(f"Ошибка при загрузке страницы вопроса: {e}")
         return RedirectResponse(url="/?error=server_error", status_code=303)
 
-
 @app.post("/addcomment", tags=["Добавить комментарий"])
 async def addcomment(
     request: Request,
@@ -461,9 +458,6 @@ async def addcomment(
     try:
         # Убираем пробелы и переводы строк
         clean_comment = comment.strip()
-
-        # Экранируем HTML, чтобы предотвратить XSS
-        clean_comment = escape(clean_comment)
 
         # Если комментарий пустой после очистки и нет картинок — не добавляем
         if not clean_comment and (not images or not any(img.filename for img in images)):
@@ -519,7 +513,6 @@ async def addcomment(
     except Exception as e:
         print(f"Ошибка при добавлении комментария: {e}")
         return RedirectResponse(url=f'/question/{id}?error=server_error', status_code=303)
-
     
 @app.get("/profile/{username}", tags=["Профиль"])
 async def profile(request: Request, username: str):
@@ -608,86 +601,72 @@ async def change_question(
         current_user = function.decrypt(request.cookies.get("username"))
         
         with Session(init.engine) as session:
-            # Получаем текущий вопрос
+            # Получаем текущий вопрос для проверки владельца
             question = session.query(init.Question).filter(
                 init.Question.id == id
             ).first()
             
             if not question or question.owner != current_user:
                 return RedirectResponse("/", status_code=303)
-
-            image_paths_str = None  # Сюда поместим новые пути (если есть)
-            save_dir = os.path.join(static_dir, "images")
-            os.makedirs(save_dir, exist_ok=True)
-
-            # Проверяем, были ли загружены новые изображения
+            
+            # Обрабатываем изображения только если они переданы
+            image_paths_str = None
+            
             if images and any(image.filename for image in images):
                 saved_paths = []
-
+                
+                # Создаем папку для изображений, если не существует
+                save_dir = os.path.join(static_dir, "images")
+                os.makedirs(save_dir, exist_ok=True)
+                
+                # Обрабатываем каждое изображение
                 for image in images:
                     if not image.filename:
                         continue
-
+                    
+                    # Проверяем тип файла
                     if not image.content_type.startswith("image/"):
                         continue
-
+                    
+                    # Генерируем уникальное имя файла
                     ext = image.filename.split('.')[-1]
                     filename = f"{uuid.uuid4()}.{ext}"
                     filepath = os.path.join(save_dir, filename)
-
+                    
+                    # Сохраняем файл
                     with open(filepath, "wb") as f:
                         f.write(await image.read())
-
+                    
+                    # Добавляем путь в список
                     saved_paths.append(f"/static/images/{filename}")
-
+                
+                # Обновляем пути к изображениям только если загружены новые
                 if saved_paths:
                     image_paths_str = ",".join(saved_paths)
-
-                    # Удаляем старые изображения, если они были
-                    if question.image_path:
-                        for old_path in question.image_path.split(","):
-                            full_path = os.path.join(static_dir, old_path.lstrip("/"))
-                            if os.path.exists(full_path):
-                                try:
-                                    os.remove(full_path)
-                                except Exception as e:
-                                    print(f"Не удалось удалить старое изображение: {e}")
-            else:
-                # Если новых изображений нет — удаляем старые
-                if question.image_path:
-                    for old_path in question.image_path.split(","):
-                        full_path = os.path.join(static_dir, old_path.lstrip("/"))
-                        if os.path.exists(full_path):
-                            try:
-                                os.remove(full_path)
-                            except Exception as e:
-                                print(f"Не удалось удалить старое изображение: {e}")
-                    image_paths_str = ""  # В БД теперь будет пусто
-
-            # Экранируем HTML в описании
-            description_clean = escape(new_description.strip()) if new_description.strip() else question.description
-
-            # Обновляем данные
+            
+            # Подготавливаем данные для обновления
             update_data = {
                 "grade": grade,
-                "subject": subject,
-                "description": description_clean,
-                "image_path": image_paths_str if image_paths_str is not None else question.image_path
+                "subject": subject
             }
-
+            
+            # Обновляем описание только если оно не пустое
+            if new_description.strip():
+                update_data["description"] = new_description.strip()
+            
+            # Обновление вопроса
             stmt = update(init.Question).where(
                 init.Question.id == id
             ).values(**update_data)
-
+            
             session.execute(stmt)
             session.commit()
-
+        
         return RedirectResponse(f"/question/{id}", status_code=303)
-
+    
     except Exception as e:
         print(f"Ошибка при изменении вопроса: {e}")
         return RedirectResponse(url="/?error=server_error", status_code=303)
-
 
 @app.post("/delete_answer", tags=["Удаление вопроса"])
 async def delete_answer(
@@ -713,20 +692,10 @@ async def delete_answer(
     else:
         return RedirectResponse("/", status_code=303)
 
-from markupsafe import escape
-from fastapi import Request, Form, File, UploadFile
-from fastapi.responses import RedirectResponse
-import os
-import uuid
-from sqlalchemy.orm import Session
-from sqlalchemy import update
-import init
-import function
-
 @app.post("/change_answer", tags=["Изменение комментария"])
 async def change_answer(
     request: Request,
-    comment: str = Form(...),
+    comment: str = Form(...),  # Изменили new_description на comment
     owner: str = Form(...),
     id: int = Form(...),
     questionId: int = Form(...),
@@ -747,87 +716,67 @@ async def change_answer(
             if not comment_obj:
                 return RedirectResponse(f"/question/{questionId}", status_code=303)
             
+            # Подготавливаем данные для обновления
             update_data = {}
-            save_dir = os.path.join(static_dir, "images", "comments")
-            os.makedirs(save_dir, exist_ok=True)
-
-            # Экранируем текст комментария
-            if comment.strip():
-                update_data["description"] = escape(comment.strip())
-
-            image_paths_str = None
-
-            # Если пользователь загрузил новые изображения
+            
+            # Обновляем описание только если оно не пустое
+            if comment.strip():  # Используем comment вместо new_description
+                update_data["description"] = comment.strip()
+            
+            # Обрабатываем изображения только если они переданы
             if images and any(image.filename for image in images):
                 saved_paths = []
+                
+                # Создаем папку для изображений комментариев
+                save_dir = os.path.join(static_dir, "images", "comments")
+                os.makedirs(save_dir, exist_ok=True)
 
+                # Обрабатываем каждое изображение
                 for image in images:
                     if not image.filename:
                         continue
-
+                    
+                    # Проверяем тип файла
                     if not image.content_type.startswith("image/"):
                         continue
-
+                    
+                    # Генерируем уникальное имя файла
                     ext = image.filename.split('.')[-1]
                     filename = f"comment_{uuid.uuid4()}.{ext}"
                     filepath = os.path.join(save_dir, filename)
-
+                    
+                    # Сохраняем файл
                     with open(filepath, "wb") as f:
                         f.write(await image.read())
-
+                    
+                    # Добавляем путь в список
                     saved_paths.append(f"/static/images/comments/{filename}")
-
+                
+                # Обновляем пути к изображениям только если загружены новые
                 if saved_paths:
-                    image_paths_str = ",".join(saved_paths)
-
-                    # Удаляем старые изображения, если они были
-                    if comment_obj.image_filename:
-                        for old_path in comment_obj.image_filename.split(","):
-                            full_path = os.path.join(static_dir, old_path.lstrip("/"))
-                            if os.path.exists(full_path):
-                                try:
-                                    os.remove(full_path)
-                                except Exception as e:
-                                    print(f"Не удалось удалить старое изображение: {e}")
-            else:
-                # Если новых изображений нет — удаляем старые
-                if comment_obj.image_filename:
-                    for old_path in comment_obj.image_filename.split(","):
-                        full_path = os.path.join(static_dir, old_path.lstrip("/"))
-                        if os.path.exists(full_path):
-                            try:
-                                os.remove(full_path)
-                            except Exception as e:
-                                print(f"Не удалось удалить старое изображение: {e}")
-                    image_paths_str = ""  # Очищаем поле в БД
-
-            # Обновляем поле изображения (даже если пустое)
-            if image_paths_str is not None:
-                update_data["image_filename"] = image_paths_str
-
-            # Если есть что обновлять — выполняем запрос
+                    update_data["image_filename"] = ",".join(saved_paths)
+            
+            # Если есть что обновлять
             if update_data:
                 stmt = update(init.Comment).where(
                     init.Comment.id == id,
                     init.Comment.owner == current_user
                 ).values(**update_data)
-
+                
                 session.execute(stmt)
                 session.commit()
-
+        
         return RedirectResponse(f"/question/{questionId}", status_code=303)
     
     except Exception as e:
         print(f"Ошибка при изменении комментария: {e}")
         return RedirectResponse(f"/question/{questionId}?error=server_error", status_code=303)
 
-
-
 @app.post("/report_question", tags=["репорты"])
 async def report_question(
     request: Request,
     questionId: str = Form(None),
-    reson: str = Form(None),  # ← исправлено: reason вместо reson
+    reson: str = Form(None),
 ):
     print(questionId, reson)
     if not request.cookies.get("id"):
@@ -896,7 +845,7 @@ async def report_answer(
             reporta = init.Reporta(
                 answer_id=answerId,  
                 reason=complaint_type,
-                image=question[0].image_filename,
+                image=question[0].image_filename, 
                 description=question[0].description,  # description из вопроса
             )
             conn.add(reporta)
