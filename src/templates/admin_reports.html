@@ -82,13 +82,19 @@
             <ul class="questions-content-list">
             {% if answers %}
                 {% for answer in answers %}
-                {{ answer }}
                 <li class="questions-content-item">
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ answer.id }}</div>
                         <div class="item-header-subject">{{ answer.reson }}</div>
                     </div>
-                    <a href="/question/{{ answer.id }}" class="questions-item-body">{{ answer.text|safe }}</a>
+                    <a href="/question/{{ answer['id'] }}" class="questions-item-body link">{{ answer.text|safe }}</a>
+                    {% if answer['image'] %}
+                    <div class="question-images scale" data-images="{{ answer['image'] }}" id="adminAnswerImages">
+                    </div>
+                    <div class="image-modal" id="imageModal" onclick="closeModal()">
+                        <img src="" alt="Preview">
+                    </div>
+                    {% endif %}
                     <div class="sure-delete-btns">
                         <form method="post" action="/admin/resolveanswer">
                             <input type="hidden" name="id" value="{{ answer.aid }}">
