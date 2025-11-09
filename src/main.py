@@ -609,10 +609,18 @@ async def change_question(
             if not question or question.owner != current_user:
                 return RedirectResponse("/", status_code=303)
             
-            # Обрабатываем изображения только если они переданы
-            image_paths_str = None
+            # Подготавливаем данные для обновления
+            update_data = {
+                "grade": grade,
+                "subject": subject
+            }
             
-            if images and any(image.filename for image in images):
+            # Обновляем описание только если оно не пустое
+            if new_description.strip():
+                update_data["description"] = new_description.strip()
+            
+            # Обрабатываем изображения только если они переданы
+            if images is not None and any(image.filename for image in images if image.filename):
                 saved_paths = []
                 
                 # Создаем папку для изображений, если не существует
@@ -640,19 +648,15 @@ async def change_question(
                     # Добавляем путь в список
                     saved_paths.append(f"/static/images/{filename}")
                 
-                # Обновляем пути к изображениям только если загружены новые
+                # Обновляем пути к изображениям только если есть сохраненные файлы
                 if saved_paths:
-                    image_paths_str = ",".join(saved_paths)
-            
-            # Подготавливаем данные для обновления
-            update_data = {
-                "grade": grade,
-                "subject": subject
-            }
-            
-            # Обновляем описание только если оно не пустое
-            if new_description.strip():
-                update_data["description"] = new_description.strip()
+                    update_data["image_path"] = ",".join(saved_paths)
+                else:
+                    # Если файлы не прошли валидацию, удаляем изображения
+                    update_data["image_path"] = None
+            else:
+                # Если изображения не переданы, удаляем их
+                update_data["image_path"] = None
             
             # Обновление вопроса
             stmt = update(init.Question).where(
