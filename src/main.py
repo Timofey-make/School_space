@@ -912,29 +912,36 @@ async def deletequestion(
     request: Request,
     id: str = Form(None),
 ):
-    if request.cookies.get("id") == "1":
+    with Session(init.engine) as conn:
+        # Получаем пользователя
+        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
+        user = conn.scalar(stmt)
+
+        # Проверяем права доступа
+        if not user or (user.id != 1 and not user.is_admin):
+            return RedirectResponse("/", status_code=303)
         id = int(id)
         print(type(id))
-        with Session(init.engine) as session:
-                stmt = sql_delete(init.Question).where(
-                    and_(
-                        init.Question.id == id, 
-                    )
-                )
-                session.execute(stmt)
-                stmt = sql_delete(init.Reportq).where(
-                    and_(
-                        init.Reportq.question_id == id,
-                    )
-                )
-                session.execute(stmt)
-                stmt = sql_delete(init.Comment).where(
-                    and_(
-                        init.Comment.question_id == id,
-                    )
-                )
-                session.execute(stmt)
-                session.commit() 
+    with Session(init.engine) as session:
+        stmt = sql_delete(init.Question).where(
+            and_(
+                init.Question.id == id, 
+            )
+        )
+        session.execute(stmt)
+        stmt = sql_delete(init.Reportq).where(
+            and_(
+                init.Reportq.question_id == id,
+            )
+        )
+        session.execute(stmt)
+        stmt = sql_delete(init.Comment).where(
+            and_(
+                init.Comment.question_id == id,
+            )
+        )
+        session.execute(stmt)
+        session.commit() 
     return RedirectResponse("/admin/panel", status_code=303)
 
 @app.post("/admin/deleteanswer")
@@ -942,23 +949,30 @@ async def deletequestion(
     request: Request,
     id: str = Form(None),
 ):
-    if request.cookies.get("id") == "1":
+    with Session(init.engine) as conn:
+        # Получаем пользователя
+        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
+        user = conn.scalar(stmt)
+
+        # Проверяем права доступа
+        if not user or (user.id != 1 and not user.is_admin):
+            return RedirectResponse("/", status_code=303)
         id = int(id)
         print(type(id))
-        with Session(init.engine) as session:
-            stmt = sql_delete(init.Comment).where(
-                    and_(
-                        init.Comment.id == id, 
-                    )
+    with Session(init.engine) as session:
+        stmt = sql_delete(init.Comment).where(
+                and_(
+                    init.Comment.id == id, 
                 )
-            session.execute(stmt)
-            stmt = sql_delete(init.Reporta).where(
-                    and_(
-                        init.Reporta.answer_id == id, 
-                    )
+            )
+        session.execute(stmt)
+        stmt = sql_delete(init.Reporta).where(
+                and_(
+                    init.Reporta.answer_id == id, 
                 )
-            session.execute(stmt)
-            session.commit()
+            )
+        session.execute(stmt)
+        session.commit()
     return RedirectResponse("/admin/panel", status_code=303)
 
 @app.post("/admin/resolvequestion")
@@ -966,17 +980,24 @@ async def resolvequestion(
     request: Request,
     id: str = Form(...)
 ):
-    if request.cookies.get("id") == "1":
+    with Session(init.engine) as conn:
+        # Получаем пользователя
+        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
+        user = conn.scalar(stmt)
+
+        # Проверяем права доступа
+        if not user or (user.id != 1 and not user.is_admin):
+            return RedirectResponse("/", status_code=303)
         id = int(id)
         print(type(id))
-        with Session(init.engine) as session:
-            stmt = sql_delete(init.Reportq).where(
-                    and_(
-                        init.Reportq.question_id == id, 
-                    )
+    with Session(init.engine) as session:
+        stmt = sql_delete(init.Reportq).where(
+                and_(
+                    init.Reportq.question_id == id, 
                 )
-            session.execute(stmt)
-            session.commit()
+            )
+        session.execute(stmt)
+        session.commit()
     return RedirectResponse("/admin/panel", status_code=303)
 
 @app.post("/admin/resolveanswer")
@@ -984,18 +1005,25 @@ async def resolveanswer(
     request: Request,
     id: str = Form(...)
 ):
-    if request.cookies.get("id") == "1":
+    with Session(init.engine) as conn:
+        # Получаем пользователя
+        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
+        user = conn.scalar(stmt)
+
+        # Проверяем права доступа
+        if not user or (user.id != 1 and not user.is_admin):
+            return RedirectResponse("/", status_code=303)
         id = int(id)
         print(type(id))
-        with Session(init.engine) as session:
-            stmt = sql_delete(init.Reporta).where(
-                    and_(
-                        init.Reporta.answer_id == id, 
-                    )
+    with Session(init.engine) as session:
+        stmt = sql_delete(init.Reporta).where(
+                and_(
+                    init.Reporta.answer_id == id, 
                 )
-            session.execute(stmt)
-            session.commit()
-        return RedirectResponse("/admin/panel", status_code=303)
+            )
+        session.execute(stmt)
+        session.commit()
+    return RedirectResponse("/admin/panel", status_code=303)
     
 #@app.post("/like_question", tags=["Лайки"])
 #async def like_questions(
