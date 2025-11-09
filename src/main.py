@@ -699,7 +699,7 @@ async def delete_answer(
 @app.post("/change_answer", tags=["Изменение комментария"])
 async def change_answer(
     request: Request,
-    comment: str = Form(...),  # Изменили new_description на comment
+    comment: str = Form(...),
     owner: str = Form(...),
     id: int = Form(...),
     questionId: int = Form(...),
@@ -724,11 +724,11 @@ async def change_answer(
             update_data = {}
             
             # Обновляем описание только если оно не пустое
-            if comment.strip():  # Используем comment вместо new_description
+            if comment.strip():
                 update_data["description"] = comment.strip()
             
-            # Обрабатываем изображения только если они переданы
-            if images and any(image.filename for image in images):
+            # Обрабатываем изображения
+            if images is not None and any(image.filename for image in images if image.filename):
                 saved_paths = []
                 
                 # Создаем папку для изображений комментариев
@@ -756,9 +756,15 @@ async def change_answer(
                     # Добавляем путь в список
                     saved_paths.append(f"/static/images/comments/{filename}")
                 
-                # Обновляем пути к изображениям только если загружены новые
+                # Обновляем пути к изображениям только если есть сохраненные файлы
                 if saved_paths:
                     update_data["image_filename"] = ",".join(saved_paths)
+                else:
+                    # Если файлы не прошли валидацию, удаляем изображения
+                    update_data["image_filename"] = None
+            else:
+                # Если изображения не переданы, удаляем их
+                update_data["image_filename"] = None
             
             # Если есть что обновлять
             if update_data:
