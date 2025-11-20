@@ -9,10 +9,15 @@ adminForm.addEventListener('submit', async (e) => {
         method: "POST",
         body: adminForm
     });
-    console.log('status:', response.status);
-    console.log('headers:', [...response.headers]);
-    const text = await response.text();
-    console.log('response text:', text);
+    const data = await response.json();
+
+    // Проверяем, что detail существует и это массив
+    if (data.detail && Array.isArray(data.detail) && data.detail.length > 0) {
+        document.getElementById("errorMessage").innerText = data.detail[0].msg || JSON.stringify(data.detail[0]);
+    } else {
+        document.getElementById("errorMessage").innerText = 'Ошибка сервера';
+    }
+
     
     if (response.redirected) {
         window.location.href = response.url
