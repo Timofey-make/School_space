@@ -15,8 +15,8 @@ import uuid
 import shutil
 from fastapi import UploadFile, File
 
-import init
-import function
+from . import init
+from . import function
 import sqlite3
 import uvicorn
 
@@ -139,7 +139,6 @@ import uuid
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-import init, function  # твои модули
 
 
 @app.post("/doadd", tags=["Добавить вопрос"])
