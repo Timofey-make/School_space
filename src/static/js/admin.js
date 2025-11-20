@@ -9,7 +9,11 @@ adminForm.addEventListener('submit', async (e) => {
         method: "POST",
         body: adminForm
     });
-
+    console.log('status:', response.status);
+    console.log('headers:', [...response.headers]);
+    const text = await response.text();
+    console.log('response text:', text);
+    
     if (response.redirected) {
         window.location.href = response.url
     }
