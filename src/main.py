@@ -44,6 +44,8 @@ BASE_DIR = Path(__file__).resolve().parent
 # app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
+
+
 @app.get("/logout", tags="Выход")
 async def logout(request: Request):
     # Создаем редирект-ответ

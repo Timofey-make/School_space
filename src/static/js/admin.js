@@ -46,22 +46,30 @@ closeBtn.addEventListener('click', () => {
 })
 
 // render images question admin
-adminQuestionImages = document.getElementById('adminQuestionImages')
+adminQuestionImages = document.querySelectorAll('#adminQuestionImages')
+
+
 if (adminQuestionImages) {
-    let srcImages = adminQuestionImages.dataset.images.split(',')
-    srcImages = srcImages.map((src) => {
-        return `<img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">`
-    }).join('')
-    adminQuestionImages.innerHTML = srcImages
+    adminQuestionImages.forEach((reportQ) => {
+        let srcImages = reportQ.dataset.images.split(',')
+        srcImages = srcImages.map((src) => {
+            return `<img src="${src}" alt="Изображение" class="question-image" onclick="openModal(this)">`
+        }).join('')
+        reportQ.innerHTML = srcImages
+    })
 }
 // render images answer admin
-adminAnswerImages = document.getElementById('adminAnswerImages')
+adminAnswerImages = document.querySelectorAll('#adminAnswerImages')
+
+
 if (adminAnswerImages) {
-    let srcImages = adminAnswerImages.dataset.images.split(',')
-    srcImages = srcImages.map((src) => {
-        return `<img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">`
-    }).join('')
-    adminAnswerImages.innerHTML = srcImages
+    adminAnswerImages.forEach((reportA) => {
+        let srcImages = reportA.dataset.images.split(',')
+        srcImages = srcImages.map((src) => {
+            return `<img src="${src}" alt="Изображение" class="question-image" onclick="openModal(this)">`
+        }).join('')
+        reportA.innerHTML = srcImages
+    })
 }
 
 
@@ -119,7 +127,7 @@ if (imageInputCreateQuestion && previewListCreateQuestion) {
         const formData = new FormData()
         formData.append('subject', formCreateQuestion.subject.value)
         formData.append('grade', formCreateQuestion.grade.value)
-        formData.append('description', escapeHtml(formCreateQuestion.description.value))
+        formData.append('description', formCreateQuestion.description.value)
 
 
         filesArrayCreateQuestion.forEach(file => {

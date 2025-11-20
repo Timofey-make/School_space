@@ -82,7 +82,7 @@
                     <form action="/addcomment" method="post" class="answer-textarea" id="formCreateAnswer">
                         <label for="comment">Хотите ответить?</label>
                         <input type="hidden" value="{{ result[5] }}" name="id">
-                        <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1"></textarea>
+                        <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1" maxlength="10000"></textarea>
                         <div class="upload-container">
                             <label class="upload-label" for="imageInputCreateAnswer">
                                 <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
@@ -357,7 +357,7 @@
                     </label>
 
                     <label class="label-report">
-                        <input type="radio" name="complaint_type" class="radio-report" value="оскорбление">
+                        <input type="radio" name="complaint_type" class="radio-report" value="Оскорбление">
                         Оскорбительное поведение
                     </label>
 
