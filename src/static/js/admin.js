@@ -16,6 +16,7 @@ adminForm.addEventListener('submit', async (e) => {
     else {
         const data = await response.json();
         document.getElementById('adminInput').value = ''
+        console.log(data)
         document.getElementById("errorMessage").innerText = data.error
     }
 })
@@ -144,7 +145,6 @@ if (imageInputCreateQuestion && previewListCreateQuestion) {
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
-                console.log(text);
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);

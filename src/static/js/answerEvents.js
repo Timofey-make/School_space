@@ -125,7 +125,6 @@ answersList.addEventListener('click', (e) => {
             images = answerEl.querySelector('.question-images')
             if (images) {
                 images = images.querySelectorAll('img')
-                console.log(images)
                 filesArrayChangeAnswer = []
                 previewListChangeAnswer.innerHTML = ``
                 getFilesFromImages(images).then(files => {
@@ -362,7 +361,6 @@ if (imageInputCreateQuestion && previewListCreateQuestion) {
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
-                console.log(text);
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
@@ -446,7 +444,6 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
-                console.log(text);
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
@@ -525,7 +522,6 @@ if (imageInputCreateAnswer && previewListCreateAnswer) {
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
-                console.log(text);
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
@@ -607,7 +603,6 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
-                console.log(text);
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);

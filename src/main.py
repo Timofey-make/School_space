@@ -70,6 +70,12 @@ async def doregister(
     login: str = Form(...),
     password: str = Form(...),
 ):
+    login = login.strip()
+    name = name.strip()
+
+    if " " in login or " " in name:
+        return JSONResponse({"error": "Логин или имя не может содержать пробелы"}, status_code=400)
+    
     with Session(init.engine) as conn:
         stmt = select(init.User).where(init.User.username == login)
         data = conn.execute(stmt).fetchall()

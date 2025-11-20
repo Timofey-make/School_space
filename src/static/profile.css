@@ -40,7 +40,8 @@
 
 
 .logout-link {
-    color: var(--color-red)
+    color: var(--color-red);
+    margin-right: auto;
 }
 
 

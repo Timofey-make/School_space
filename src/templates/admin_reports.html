@@ -57,7 +57,7 @@
                     <div class="question-images scale" data-images="{{ question['image'] }}" id="adminQuestionImages">
                     </div>
                     <div class="image-modal" id="imageModal" onclick="closeModal()">
-                        <img src="" alt="Preview">
+                        <img src="" alt="Превью">
                     </div>
                     {% endif %}
                     <div class="sure-delete-btns">
@@ -92,7 +92,7 @@
                     <div class="question-images scale" data-images="{{ answer['image'] }}" id="adminAnswerImages">
                     </div>
                     <div class="image-modal" id="imageModal" onclick="closeModal()">
-                        <img src="" alt="Preview">
+                        <img src="" alt="Превью">
                     </div>
                     {% endif %}
                     <div class="sure-delete-btns">
@@ -115,7 +115,7 @@
         <div class="overlay" id="overlayCreate">
             <section class="create">
                 <button class="create-close-btn" id="close">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data" id="formCreateQuestion">
                     <div class="create-form-text">
