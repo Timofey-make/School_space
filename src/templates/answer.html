@@ -37,7 +37,7 @@
             <div class="question">
                 <div class="edit-wrapper">
                     <button class="edit-btn" id="editBtn">
-                        <img src="{{ url_for('static', path='imgs/more.svg') }}" alt="">
+                        <img src="{{ url_for('static', path='imgs/more.svg') }}" alt="Меню">
                     </button>
                     <div class="question-edit-container" id="editContainer">
                         {% if username == result[0] %}
@@ -67,7 +67,7 @@
                 {% if images %}
                 <div id="questionImages" class="question-images scale">
                     {% for img in images %}
-                    <img src="{{ url_for('static', path=img) }}" alt="Изображение вопроса" onclick="openModal(this)">
+                    <img src="{{ url_for('static', path=img) }}" alt="Изображение" onclick="openModal(this)">
                     {% endfor %}
                 </div>
                 {% endif %}
@@ -80,9 +80,9 @@
                 {% if username %}
                 <div class="questions-content-item">
                     <form action="/addcomment" method="post" class="answer-textarea" id="formCreateAnswer">
-                        <label for="comment">Хотите ответить?</label>
+                        <label for="answerTextArea">Хотите ответить?</label>
                         <input type="hidden" value="{{ result[5] }}" name="id">
-                        <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1"></textarea>
+                        <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1" maxlength="10000"></textarea>
                         <div class="upload-container">
                             <label class="upload-label" for="imageInputCreateAnswer">
                                 <img src="{{ url_for('static', path='imgs/clip.svg') }}" alt="Прикрепить файл">
@@ -107,7 +107,7 @@
         <div class="overlay" id="overlayCreate">
             <section class="create">
                 <button class="create-close-btn" id="close">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/doadd" method="post" class="create-form" enctype="multipart/form-data" id="formCreateQuestion">
                     <div class="create-form-text">
@@ -165,7 +165,7 @@
         <div class="overlay" id="overlaySureQuestionDelete">
             <section class="sure-delete">
                 <button class="create-close-btn" id="sureCloseQuestionBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить вопрос?</div>
                 <div class="sure-delete-btns">
@@ -188,7 +188,7 @@
         <div class="overlay" id="overlaySureAnswerDelete">
             <section class="sure-delete">
                 <button class="create-close-btn" id="sureCloseAnswerBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить ответ?</div>
                 <div class="sure-delete-btns">
@@ -211,7 +211,7 @@
         <div class="overlay" id="overlayChangeQuestionContainer">
             <section class="create">
                 <button class="create-close-btn" id="closeChangeQuestionContainerBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/change" method="post" class="create-form" id="formChangeQuestion">
                     <div class="create-form-text">
@@ -274,7 +274,7 @@
         <div class="overlay" id="overlayChangeAnswerContainer">
             <section class="create">
                 <button class="create-close-btn" id="closeChangeAnswerContainerBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/change_answer" method="post" class="create-form" id="formChangeAnswer">
                     <div class="create-form-text">
@@ -303,7 +303,7 @@
         <div class="overlay" id="overlayReportQuestionContainer">
             <section class="report">
                 <button class="create-close-btn" id="closeReportQuestionContainerBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/report_question" method="post" class="create-form">
                     <div class="report-title">Выберите причину жалобы</div>
@@ -344,7 +344,7 @@
         <div class="overlay" id="overlayReportAnswerContainer">
             <section class="report">
                 <button class="create-close-btn" id="closeReportAnswerContainerBtn">
-                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
                 <form action="/report_answer" method="post" class="create-form">
                     <div class="report-title">Выберите причину жалобы</div>
@@ -357,7 +357,7 @@
                     </label>
 
                     <label class="label-report">
-                        <input type="radio" name="complaint_type" class="radio-report" value="оскорбление">
+                        <input type="radio" name="complaint_type" class="radio-report" value="Оскорбление">
                         Оскорбительное поведение
                     </label>
 

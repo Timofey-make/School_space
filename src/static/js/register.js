@@ -9,7 +9,6 @@ registerForm.addEventListener('submit', async (e) => {
         method: "POST",
         body: registerData
     });
-    console.log('adad')
 
     if (response.redirected) {
         window.location.href = response.url

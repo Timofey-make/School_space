@@ -15,8 +15,8 @@ import uuid
 import shutil
 from fastapi import UploadFile, File
 
-import init
-import function
+from . import init
+from . import function
 import sqlite3
 import uvicorn
 
@@ -44,6 +44,8 @@ BASE_DIR = Path(__file__).resolve().parent
 # app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
+
+
 @app.get("/logout", tags="Выход")
 async def logout(request: Request):
     # Создаем редирект-ответ
@@ -68,6 +70,12 @@ async def doregister(
     login: str = Form(...),
     password: str = Form(...),
 ):
+    login = login.strip()
+    name = name.strip()
+
+    if " " in login or " " in name:
+        return JSONResponse({"error": "Логин или имя не может содержать пробелы"}, status_code=400)
+    
     with Session(init.engine) as conn:
         stmt = select(init.User).where(init.User.username == login)
         data = conn.execute(stmt).fetchall()
@@ -137,7 +145,6 @@ import uuid
 from fastapi import FastAPI, Request, Form, File, UploadFile
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
-import init, function  # твои модули
 
 
 @app.post("/doadd", tags=["Добавить вопрос"])
