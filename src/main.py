@@ -525,29 +525,32 @@ async def profile(request: Request, username: str):
                 init.User.is_admin,
             ).where(init.User.username == username)
             data = conn.execute(stmt).fetchall()
-            account = [data[0].id, data[0].name, username, data[0].title, data[0].background, data[0].is_admin,]
-            stmt = select(
-                init.Question.id,
-                init.Question.owner,
-                init.Question.owner_name,
-                init.Question.subject,
-                init.Question.grade,
-                init.Question.description,
-                init.Question.created_at,
-            ).where(init.Question.owner == username).order_by(init.Question.id.desc())
-            data = conn.execute(stmt).fetchall()
+            if data:
+                account = [data[0].id, data[0].name, username, data[0].title, data[0].background, data[0].is_admin,]
+                stmt = select(
+                    init.Question.id,
+                    init.Question.owner,
+                    init.Question.owner_name,
+                    init.Question.subject,
+                    init.Question.grade,
+                    init.Question.description,
+                    init.Question.created_at,
+                ).where(init.Question.owner == username).order_by(init.Question.id.desc())
+                data = conn.execute(stmt).fetchall()
 
-            questions = []
-            for row in data:
-                questions.append({
-                    "id": row.id,
-                    "username": row.owner,
-                    "name": row.owner_name,
-                    "subject": row.subject,  
-                    "grade": row.grade,
-                    "text": row.description,
-                    "created_at": row.created_at.isoformat() if row.created_at else None,
-                })
+                questions = []
+                for row in data:
+                    questions.append({
+                        "id": row.id,
+                        "username": row.owner,
+                        "name": row.owner_name,
+                        "subject": row.subject,  
+                        "grade": row.grade,
+                        "text": row.description,
+                        "created_at": row.created_at.isoformat() if row.created_at else None,
+                    })
+            else:
+                return JSONResponse(content={"error": "Пользователь не найден"}, status_code=401)
     if request.cookies.get('id'):
         return templates.TemplateResponse(
             "profile.html", 
@@ -1112,6 +1115,23 @@ async def add_admin(
         session.commit()
 
         return RedirectResponse("/admin/panel", status_code=303)
+
+@app.post("/delete_account")
+async def delete_account(
+    request: Request,
+    id: int = Form(...),
+):
+    if int(id) == int(request.cookies.get("id")):
+        with Session(init.engine) as session:
+            # Правильное использование delete
+            stmt = sql_delete(init.User).where(
+                and_(
+                    init.User.id == id,
+                )
+            )
+            session.execute(stmt)
+            session.commit()  # Не забывайте скобки!
+    return RedirectResponse("/logout", status_code=303)
 
 if __name__ == "__main__":
     init.Base.metadata.create_all(init.engine)
