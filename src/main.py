@@ -217,7 +217,6 @@ async def doadd(
         print(f"Ошибка при добавлении вопроса: {e}")
         return RedirectResponse(url="/?error=server_error", status_code=303)
 
-
 @app.get("/api/answers", tags=["API"])
 async def get_answers():
     with Session(init.engine) as conn:
@@ -234,11 +233,12 @@ async def get_answers():
         questions = []
         for row in data:
             stmt = select(init.User.name).where(init.User.username == row.owner)
-            data = conn.execute(stmt).fetchall()
+            data1 = conn.execute(stmt).fetchall()
+            print(data1)
             questions.append({
                 "id": row.id,
                 "question_id": row.question_id,
-                "name": data[0].name,
+                "name": data1[0].name,
                 "username": row.owner,
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
@@ -1119,6 +1119,37 @@ async def add_admin(
         session.commit()
 
         return RedirectResponse("/admin/panel", status_code=303)
+
+@app.post("/delete_account")
+async def delete_account(
+    request: Request,
+    id: int = Form(...),
+):
+    if int(id) == int(request.cookies.get("id")):
+        with Session(init.engine) as session:
+            # Правильное использование delete
+            stmt = sql_delete(init.User).where(
+                and_(
+                    init.User.id == id,
+                )
+            )
+            session.execute(stmt)
+            session.commit()  # Не забывайте скобки!
+            stmt = sql_delete(init.Question).where(
+                and_(
+                    init.Question.owner == function.decrypt(request.cookies.get("username")),
+                )
+            )
+            session.execute(stmt)
+            session.commit()  # Не забывайте скобки!
+            stmt = sql_delete(init.Comment).where(
+                and_(
+                    init.Comment.owner == function.decrypt(request.cookies.get("username")),
+                )
+            )
+            session.execute(stmt)
+            session.commit()  # Не забывайте скобки!
+    return RedirectResponse("/logout", status_code=303)
 
 if __name__ == "__main__":
     init.Base.metadata.create_all(init.engine)

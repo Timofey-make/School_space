@@ -44,6 +44,7 @@
                 {% endif %}
                 {% if username == account[2] %}
                 <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
+                <a class="link delete-link" id="deleteProfile">Удалить аккаунт</a>
                 {% endif %}
             </div>
             <div class="profile">
@@ -110,6 +111,27 @@
                 </form>
             </section>
         </div>
+        {% if username == account[2] %}
+        <div class="overlay" id="overlaySureProfileDelete">
+            <section class="sure-delete">
+                <button class="create-close-btn" id="sureCloseDeleteProfileBtn">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
+                </button>
+                <div class="sure-delete-title">Вы уверены что хотите удалить аккаунт?</div>
+                <div class="sure-delete-btns">
+                    <form action="/delete_account" method="post">
+                        <input id="deleteAccountId" type="hidden" name="id" value="{{ account[0] }}">
+                        <button type="submit" class="btn delete-sure">
+                            Удалить
+                        </button>
+                    </form>
+                    <button type="submit" class="btn" id="sureCancelProfileDeleteBtn">
+                        Отменить
+                    </button>
+                </div>
+            </section>
+        </div>
+        {% endif %}
     </main>
 </body>
 </html>
