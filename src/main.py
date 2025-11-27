@@ -532,29 +532,32 @@ async def profile(request: Request, username: str):
                 init.User.is_admin,
             ).where(init.User.username == username)
             data = conn.execute(stmt).fetchall()
-            account = [data[0].id, data[0].name, username, data[0].title, data[0].background, data[0].is_admin,]
-            stmt = select(
-                init.Question.id,
-                init.Question.owner,
-                init.Question.owner_name,
-                init.Question.subject,
-                init.Question.grade,
-                init.Question.description,
-                init.Question.created_at,
-            ).where(init.Question.owner == username).order_by(init.Question.id.desc())
-            data = conn.execute(stmt).fetchall()
+            if data:
+                account = [data[0].id, data[0].name, username, data[0].title, data[0].background, data[0].is_admin,]
+                stmt = select(
+                    init.Question.id,
+                    init.Question.owner,
+                    init.Question.owner_name,
+                    init.Question.subject,
+                    init.Question.grade,
+                    init.Question.description,
+                    init.Question.created_at,
+                ).where(init.Question.owner == username).order_by(init.Question.id.desc())
+                data = conn.execute(stmt).fetchall()
 
-            questions = []
-            for row in data:
-                questions.append({
-                    "id": row.id,
-                    "username": row.owner,
-                    "name": row.owner_name,
-                    "subject": row.subject,  
-                    "grade": row.grade,
-                    "text": row.description,
-                    "created_at": row.created_at.isoformat() if row.created_at else None,
-                })
+                questions = []
+                for row in data:
+                    questions.append({
+                        "id": row.id,
+                        "username": row.owner,
+                        "name": row.owner_name,
+                        "subject": row.subject,  
+                        "grade": row.grade,
+                        "text": row.description,
+                        "created_at": row.created_at.isoformat() if row.created_at else None,
+                    })
+            else:
+                return JSONResponse(content={"error": "Пользователь не найден"}, status_code=401)
     if request.cookies.get('id'):
         return templates.TemplateResponse(
             "profile.html", 
