@@ -185,6 +185,25 @@ if (imageInputCreateQuestion && previewListCreateQuestion) {
     });
 }
 
+// delete account
+const deleteProfileElement = document.getElementById('deleteProfile')
+const overlaySureProfileDelete = document.getElementById('overlaySureProfileDelete')
+const sureCloseDeleteProfileBtn = document.getElementById('sureCloseDeleteProfileBtn')
+const sureCancelProfileDeleteBtn = document.getElementById('sureCancelProfileDeleteBtn')
+
+if (deleteProfileElement && overlaySureProfileDelete && sureCloseDeleteProfileBtn) {
+    deleteProfileElement.addEventListener('click', (e) => {
+        overlaySureProfileDelete.classList.add('active')
+    })
+    sureCancelProfileDeleteBtn.addEventListener('click', () => {
+        overlaySureProfileDelete.classList.remove('active')
+    })
+    sureCloseDeleteProfileBtn.addEventListener('click', () => {
+        overlaySureProfileDelete.classList.remove('active')
+    })
+}
+
+
 window.addEventListener('DOMContentLoaded', () => {
     const selects = document.querySelectorAll('select')
     selects.forEach((select) => {

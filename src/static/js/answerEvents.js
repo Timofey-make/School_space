@@ -162,6 +162,8 @@ answersList.addEventListener('click', (e) => {
         }
     }
 })
+
+
 document.addEventListener('click', (e) => {
     const activeContainers = document.querySelectorAll('.question-edit-container.active');
 
@@ -169,6 +171,7 @@ document.addEventListener('click', (e) => {
         container.classList.remove('active');
     });
 });
+
 
 
 
