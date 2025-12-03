@@ -524,6 +524,8 @@ async def addcomment(
 @app.get("/profile/{username}", tags=["Профиль"])
 async def profile(request: Request, username: str):
     with Session(init.engine) as conn:
+            stmt = select(init.User.is_admin).where(init.User.username == function.decrypt(request.cookies.get("username")))
+            admin = conn.execute(stmt).fetchall()[0].is_admin
             stmt = select(
                 init.User.id,
                 init.User.name,
@@ -561,7 +563,7 @@ async def profile(request: Request, username: str):
     if request.cookies.get('id'):
         return templates.TemplateResponse(
             "profile.html", 
-            {"request": request, "account": account, "questions": questions, "name": function.decrypt(request.cookies.get("name")), "username": function.decrypt(request.cookies.get("username")), "id": request.cookies.get("id")}
+            {"request": request, "account": account, "questions": questions, "name": function.decrypt(request.cookies.get("name")), "username": function.decrypt(request.cookies.get("username")), "id": request.cookies.get("id"), "admin":admin}
         )
     return templates.TemplateResponse(
     "profile.html", 
@@ -1128,31 +1130,42 @@ async def delete_account(
     request: Request,
     id: int = Form(...),
 ):
-    if int(id) == int(request.cookies.get("id")):
-        with Session(init.engine) as session:
-            # Правильное использование delete
-            stmt = sql_delete(init.User).where(
-                and_(
-                    init.User.id == id,
-                )
+    with Session(init.engine) as conn:
+        # Получаем пользователя
+        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
+        user = conn.scalar(stmt)
+        stmt = select(init.User).where(init.User.id == int(id))
+        user1 = conn.scalar(stmt)
+
+        # Проверяем права доступа
+        if not user or (user.id != 1 and not user.is_admin):
+            return RedirectResponse("/", status_code=303)
+    with Session(init.engine) as session:
+        # Правильное использование delete
+        stmt = sql_delete(init.User).where(
+            and_(
+                init.User.id == id,
             )
-            session.execute(stmt)
-            session.commit()  # Не забывайте скобки!
-            stmt = sql_delete(init.Question).where(
-                and_(
-                    init.Question.owner == function.decrypt(request.cookies.get("username")),
-                )
+        )
+        session.execute(stmt)
+        session.commit()  # Не забывайте скобки!
+        stmt = sql_delete(init.Question).where(
+            and_(
+                init.Question.owner == user1.username,
             )
-            session.execute(stmt)
-            session.commit()  # Не забывайте скобки!
-            stmt = sql_delete(init.Comment).where(
-                and_(
-                    init.Comment.owner == function.decrypt(request.cookies.get("username")),
-                )
+        )
+        session.execute(stmt)
+        session.commit()  # Не забывайте скобки!
+        stmt = sql_delete(init.Comment).where(
+            and_(
+                init.Comment.owner == user1.username,
             )
-            session.execute(stmt)
-            session.commit()  # Не забывайте скобки!
-    return RedirectResponse("/logout", status_code=303)
+        )
+        session.execute(stmt)
+        session.commit()  # Не забывайте скобки!
+        if user != user1:
+            return RedirectResponse("/logout", status_code=303)
+        return RedirectResponse("/", status_code=303)
 
 if __name__ == "__main__":
     init.Base.metadata.create_all(init.engine)
