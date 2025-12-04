@@ -4,28 +4,17 @@ adminForm.addEventListener('submit', async (e) => {
     e.preventDefault()
 
 
-    const adminForm = new FormData(e.target)
+    const adminFormData = new FormData(e.target)
     const response = await fetch("/admin/add", {
         method: "POST",
-        body: adminForm
+        body: adminFormData
     });
-    const data = await response.json();
-
-    // Проверяем, что detail существует и это массив
-    if (data.detail && Array.isArray(data.detail) && data.detail.length > 0) {
-        document.getElementById("errorMessage").innerText = data.detail[0].msg || JSON.stringify(data.detail[0]);
-    } else {
-        document.getElementById("errorMessage").innerText = 'Ошибка сервера';
-    }
-
-    
     if (response.redirected) {
-        window.location.href = response.url
+        window.location.href = response.url;
     }
     else {
         const data = await response.json();
         document.getElementById('adminInput').value = ''
-        console.log(data)
         document.getElementById("errorMessage").innerText = data.error
     }
 })

@@ -14,8 +14,13 @@ body {
     padding-bottom: 15px;
     column-gap: 20px;
 }
+.header-logo {
+    flex: 0 0 auto;
+}
 .header-logo img {
     width: 70px;
+    height: 70px;
+    object-fit: contain;
 }
 
 .search-input {

@@ -523,51 +523,92 @@ async def addcomment(
     
 @app.get("/profile/{username}", tags=["Профиль"])
 async def profile(request: Request, username: str):
-    with Session(init.engine) as conn:
-            stmt = select(init.User.is_admin).where(init.User.username == function.decrypt(request.cookies.get("username")))
-            admin = conn.execute(stmt).fetchall()[0].is_admin
-            stmt = select(
-                init.User.id,
-                init.User.name,
-                init.User.title,
-                init.User.background,
-                init.User.is_admin,
-            ).where(init.User.username == username)
-            data = conn.execute(stmt).fetchall()
-            if data:
-                account = [data[0].id, data[0].name, username, data[0].title, data[0].background, data[0].is_admin,]
-                stmt = select(
-                    init.Question.id,
-                    init.Question.owner,
-                    init.Question.owner_name,
-                    init.Question.subject,
-                    init.Question.grade,
-                    init.Question.description,
-                    init.Question.created_at,
-                ).where(init.Question.owner == username).order_by(init.Question.id.desc())
-                data = conn.execute(stmt).fetchall()
+    cookie_username = request.cookies.get("username")
+    user_is_admin = False  # по умолчанию гость не админ
 
-                questions = []
-                for row in data:
-                    questions.append({
-                        "id": row.id,
-                        "username": row.owner,
-                        "name": row.owner_name,
-                        "subject": row.subject,  
-                        "grade": row.grade,
-                        "text": row.description,
-                        "created_at": row.created_at.isoformat() if row.created_at else None,
-                    })
-            else:
-                return JSONResponse(content={"error": "Пользователь не найден"}, status_code=401)
-    if request.cookies.get('id'):
+    if cookie_username:
+        try:
+            decrypted_username = function.decrypt(cookie_username)
+        except:
+            decrypted_username = None
+    else:
+        decrypted_username = None
+
+    with Session(init.engine) as conn:
+
+        # Если пользователь авторизован — узнаём, он админ или нет
+        if decrypted_username:
+            stmt = select(init.User.is_admin).where(init.User.username == decrypted_username)
+            result = conn.execute(stmt).fetchone()
+            if result:
+                user_is_admin = result.is_admin
+
+        # Получаем данные профиля, на который заходим
+        stmt = select(
+            init.User.id,
+            init.User.name,
+            init.User.title,
+            init.User.background,
+            init.User.is_admin,
+        ).where(init.User.username == username)
+
+        data = conn.execute(stmt).fetchone()
+        if not data:
+            return JSONResponse(content={"error": "Пользователь не найден"}, status_code=404)
+
+        account = [data.id, data.name, username, data.title, data.background, data.is_admin]
+
+        # вопросы пользователя
+        stmt = select(
+            init.Question.id,
+            init.Question.owner,
+            init.Question.owner_name,
+            init.Question.subject,
+            init.Question.grade,
+            init.Question.description,
+            init.Question.created_at,
+        ).where(init.Question.owner == username).order_by(init.Question.id.desc())
+
+        questions_raw = conn.execute(stmt).fetchall()
+
+        questions = [
+            {
+                "id": row.id,
+                "username": row.owner,
+                "name": row.owner_name,
+                "subject": row.subject,
+                "grade": row.grade,
+                "text": row.description,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+            }
+            for row in questions_raw
+        ]
+
+    # Рендер: если авторизован
+    if cookie_username:
         return templates.TemplateResponse(
-            "profile.html", 
-            {"request": request, "account": account, "questions": questions, "name": function.decrypt(request.cookies.get("name")), "username": function.decrypt(request.cookies.get("username")), "id": request.cookies.get("id"), "admin":admin}
+            "profile.html",
+            {
+                "request": request,
+                "account": account,
+                "questions": questions,
+                "name": function.decrypt(request.cookies.get("name")),
+                "username": decrypted_username,
+                "id": request.cookies.get("id"),
+                "admin": user_is_admin,
+            }
         )
+
+    # Рендер для гостя
     return templates.TemplateResponse(
-    "profile.html", 
-    {"request": request, "account": account, "questions": questions})
+        "profile.html",
+        {
+            "request": request,
+            "account": account,
+            "questions": questions,
+        }
+    )
+
 
 
 @app.post("/delete", tags=["Удаление вопроса"])
@@ -1130,42 +1171,56 @@ async def delete_account(
     request: Request,
     id: int = Form(...),
 ):
-    with Session(init.engine) as conn:
-        # Получаем пользователя
-        stmt = select(init.User).where(init.User.id == int(request.cookies.get("id")))
-        user = conn.scalar(stmt)
-        stmt = select(init.User).where(init.User.id == int(id))
-        user1 = conn.scalar(stmt)
-
-        # Проверяем права доступа
-        if not user or (user.id != 1 and not user.is_admin):
-            return RedirectResponse("/", status_code=303)
-    with Session(init.engine) as session:
-        # Правильное использование delete
-        stmt = sql_delete(init.User).where(
-            and_(
-                init.User.id == id,
-            )
-        )
-        session.execute(stmt)
-        session.commit()  # Не забывайте скобки!
-        stmt = sql_delete(init.Question).where(
-            and_(
-                init.Question.owner == user1.username,
-            )
-        )
-        session.execute(stmt)
-        session.commit()  # Не забывайте скобки!
-        stmt = sql_delete(init.Comment).where(
-            and_(
-                init.Comment.owner == user1.username,
-            )
-        )
-        session.execute(stmt)
-        session.commit()  # Не забывайте скобки!
-        if user != user1:
-            return RedirectResponse("/logout", status_code=303)
+    cookie_user_id = request.cookies.get("id")
+    if cookie_user_id is None:
         return RedirectResponse("/", status_code=303)
+
+    cookie_user_id = int(cookie_user_id)
+
+    with Session(init.engine) as session:
+
+        # Определяем кто делает запрос
+        stmt = select(init.User).where(init.User.id == cookie_user_id)
+        current_user = session.scalar(stmt)
+
+        # Определяем кого удаляем
+        stmt = select(init.User).where(init.User.id == id)
+        target_user = session.scalar(stmt)
+
+        if not target_user:
+            return RedirectResponse("/", status_code=303)
+
+        # Проверка прав
+        if not current_user or (current_user.id != 1 and not current_user.is_admin) and (id != cookie_user_id):
+            return RedirectResponse("/", status_code=303)
+
+        # Получаем имя удаляемого пользователя
+        target_username = target_user.username
+
+        # Удаляем пользователя
+        session.execute(sql_delete(init.User).where(init.User.id == id))
+        session.commit()
+
+        # Удаляем вопросы удалённого пользователя
+        session.execute(
+            sql_delete(init.Question).where(init.Question.owner == target_username)
+        )
+        session.commit()
+
+        # Удаляем комментарии удалённого пользователя
+        session.execute(
+            sql_delete(init.Comment).where(init.Comment.owner == target_username)
+        )
+        session.commit()
+
+    # Если пользователь удалил СВОЙ аккаунт — выходим
+    if id == cookie_user_id:
+        return RedirectResponse("/logout", status_code=303)
+
+    # Если админ удалил чужой аккаунт
+    return RedirectResponse("/", status_code=303)
+
+
 
 if __name__ == "__main__":
     init.Base.metadata.create_all(init.engine)
