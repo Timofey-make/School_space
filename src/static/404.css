@@ -6,4 +6,9 @@
     justify-content: center;
     align-items: center;
     background-color: var(--color-light);
+    text-align: center;
+    font-size: clamp(23px, 1.9vw, 28px);
+    padding-inline: var(--container-padding-x);
 }
+
+
