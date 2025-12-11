@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, Form, Response, requests
+from fastapi import HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -44,6 +45,27 @@ BASE_DIR = Path(__file__).resolve().parent
 # app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
+from starlette.exceptions import HTTPException as StarletteHTTPException
+
+@app.exception_handler(404)
+async def not_found(request: Request, exc: StarletteHTTPException):
+    return templates.TemplateResponse(
+        "404.html",
+        {"request": request},
+        status_code=404
+    )
+from fastapi.exceptions import RequestValidationError
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return templates.TemplateResponse(
+        "404.html",
+        {"request": request},
+        status_code=404
+    )
 
 
 @app.get("/logout", tags="Выход")
@@ -364,7 +386,7 @@ async def question_page(request: Request, note_id: int):
 
             # Если вопрос не найден — редиректим
             if not question_data:
-                return RedirectResponse(url="/", status_code=303)
+                raise HTTPException(status_code=404, detail="Пользователь не найден")
 
             # Распаковываем результат в список
             result = [
@@ -452,8 +474,7 @@ async def question_page(request: Request, note_id: int):
             })
 
     except Exception as e:
-        print(f"Ошибка при загрузке страницы вопроса: {e}")
-        return RedirectResponse(url="/?error=server_error", status_code=303)
+        raise HTTPException(status_code=422, detail="Некоректный ввод")
 
 @app.post("/addcomment", tags=["Добавить комментарий"])
 async def addcomment(
@@ -554,7 +575,7 @@ async def profile(request: Request, username: str):
 
         data = conn.execute(stmt).fetchone()
         if not data:
-            return JSONResponse(content={"error": "Пользователь не найден"}, status_code=404)
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
 
         account = [data.id, data.name, username, data.title, data.background, data.is_admin]
 
