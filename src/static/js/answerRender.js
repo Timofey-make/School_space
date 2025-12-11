@@ -94,7 +94,7 @@ function toHTML(answer) {
         ${answer.images && answer.images.trim() !== '' ? `
             <div class="question-images scale">
                 ${answer.images.split(',').map(src => `
-                    <img src="${src}" alt="Изображение вопроса" class="question-image" onclick="openModal(this)">
+                    <img src="${src}" alt="Изображение" class="question-image" onclick="openModal(this)">
                 `).join('')}
             </div>
         ` : ''}

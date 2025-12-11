@@ -74,7 +74,7 @@ function toHTML(question) {
             ${question.images && question.images.length > 0 ? `
                 <div class="question-images">
                     ${question.images.map(src => `
-                        <img src="${src}" alt="Изображение вопроса" class="question-image">
+                        <img src="${src}" alt="Изображение" class="question-image">
                     `).join('')}
                 </div>
             ` : ''}

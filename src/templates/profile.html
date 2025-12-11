@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль {{account[1]}}</title>
+    <title>Профиль {{account[2] }}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/main.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/questions.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', path='/profile.css') }}">
@@ -44,6 +44,8 @@
                 {% endif %}
                 {% if username == account[2] %}
                 <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
+                {% endif %}
+                {% if id == "1" or admin or username == account[2] %}
                 <a class="link delete-link" id="deleteProfile">Удалить аккаунт</a>
                 {% endif %}
             </div>
@@ -111,7 +113,7 @@
                 </form>
             </section>
         </div>
-        {% if username == account[2] %}
+        {% if username == account[2] or id == "1" or admin %}
         <div class="overlay" id="overlaySureProfileDelete">
             <section class="sure-delete">
                 <button class="create-close-btn" id="sureCloseDeleteProfileBtn">
