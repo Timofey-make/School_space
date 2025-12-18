@@ -1208,9 +1208,9 @@ async def delete_account(
         stmt = select(init.User).where(init.User.id == id)
         target_user = session.scalar(stmt)
 
-        if not target_user:
+        if not target_user or target_user.id == 1:
             return RedirectResponse("/", status_code=303)
-
+        
         # Проверка прав
         if not current_user or (current_user.id != 1 and not current_user.is_admin) and (id != cookie_user_id):
             return RedirectResponse("/", status_code=303)
