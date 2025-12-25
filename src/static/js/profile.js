@@ -45,7 +45,7 @@ function toHTML(question) {
             ` : ''}
 
             <div class="questions-item-footer">
-                <a class="btn" href="/question/${question.id}">Ответить</a>
+                <a class="btn" href="question/${question.id}">Ответить</a>
             </div>
         </li>`
 }

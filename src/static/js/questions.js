@@ -17,16 +17,42 @@ async function start() {
     }
 }
 
+function getTrigrams(str) {
+    const trigrams = []
+    if (str.length < 3) {
+        return [str];
+    }
+
+    for (let i = 0; i <= str.length - 3; i++) {
+        trigrams.push(str.slice(i, i + 3));
+    }
+    return trigrams;
+}
+
+
 function applyFilters() {
     const value = seacrhInput.value.toLowerCase()
     const subject = subjectSelect.options[subjectSelect.selectedIndex].text.toLowerCase();
     const grade = gradeSelect.options[gradeSelect.selectedIndex].text.toLowerCase();
 
     let filtered = questions
-    
-    
+      
     if (value) {
-        filtered = filtered.filter((question) => question.text.toLowerCase().includes(value))
+        if (value.length < 3) {
+            filtered = filtered.filter((question) => question.text.toLowerCase().includes(value))
+        }
+        else {
+            filtered = filtered.filter((question) => {
+                textTrigrams = getTrigrams(question.text.toLowerCase())
+                valueTrigrams = getTrigrams(value)
+                if (textTrigrams.length === 0 || valueTrigrams.length === 0) {
+                    return false;
+                }
+                const textSet = new Set(textTrigrams);
+
+                return valueTrigrams.some(tri => textSet.has(tri));
+            })
+        }
     }
     if (subject !== 'все предметы') {
         filtered = filtered.filter((question) => question.subject.toLowerCase().includes(subject))
