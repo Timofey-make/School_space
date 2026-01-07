@@ -1,4 +1,4 @@
-import { initCreateOverlay, uploadQuestionCreate } from './utils.js';
+import { initCreateOverlay, uploadQuestionCreate, openModal, closeModal } from './utils.js';
 
 adminForm = document.getElementById('adminForm')
 
@@ -60,18 +60,6 @@ const imageInputCreateQuestion = document.getElementById('imageInputCreateQuesti
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
 uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
 
-
-
-function openModal(img) {
-    const modal = document.getElementById('imageModal')
-    const modalImg = modal.querySelector('img')
-    modalImg.src = img.src
-    modal.classList.add('active')
-}
-
-function closeModal() {
-    document.getElementById('imageModal').classList.remove('active');
-}
 
 window.addEventListener('DOMContentLoaded', () => {
     const selects = document.querySelectorAll('select')

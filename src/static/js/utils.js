@@ -45,7 +45,7 @@ export function toHTML(question) {
         ` : ''}
 
         <div class="questions-item-footer">
-            <a class="btn" href="question/${question.id}">Ответить</a>
+            <a class="btn" href="/question/${question.id}">Ответить</a>
         </div>
     </li>`;
 }
@@ -153,3 +153,21 @@ export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreate
         });
     }
 }
+
+
+
+// modal windows images
+export function openModal(img) {
+    const modal = document.getElementById('imageModal')
+    const modalImg = modal.querySelector('img')
+    modalImg.src = img.src
+    modal.classList.add('active')
+}
+
+window.openModal = openModal
+
+export function closeModal() {
+    document.getElementById('imageModal').classList.remove('active');
+}
+
+window.closeModal = closeModal

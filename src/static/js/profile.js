@@ -1,4 +1,4 @@
-import { toHTML, initCreateOverlay } from './utils.js';
+import { toHTML, initCreateOverlay, uploadQuestionCreate } from './utils.js';
 
 const profileQuestionsContainer = document.getElementById('profileQuestionsContainer')
 

@@ -1,4 +1,4 @@
-import { initCreateOverlay } from './utils.js';
+import { initCreateOverlay, openModal, closeModal, uploadQuestionCreate } from './utils.js';
 
 // create question overlay
 const createBtn = document.getElementById('create')
@@ -6,6 +6,8 @@ const overlayContainer = document.getElementById('overlayCreate')
 const closeBtn = document.getElementById('close')
 
 initCreateOverlay(createBtn, overlayContainer, closeBtn)
+
+
 
 const editBtn = document.getElementById('editBtn')
 const editContainer = document.getElementById('editContainer')
@@ -174,11 +176,6 @@ if (deleteQuestionBtn && overlaySureQuestionDelete && sureCancelQuestionBtn && s
         overlaySureQuestionDelete.classList.remove('active')
     })
 }
-async function urlToFile(url, filename, mimeType) {
-  const response = await fetch(url);
-  const blob = await response.blob();
-  return new File([blob], filename, { type: mimeType || blob.type });
-}
 
 async function getFilesFromImages(nodeList) {
   const files = [];
@@ -263,17 +260,6 @@ if (textarea) {
     });
 } 
 
-
-function openModal(img) {
-    const modal = document.getElementById('imageModal')
-    const modalImg = modal.querySelector('img')
-    modalImg.src = img.src
-    modal.classList.add('active')
-}
-
-function closeModal() {
-    document.getElementById('imageModal').classList.remove('active');
-}
 
 
 // upload question create
