@@ -1,3 +1,5 @@
+import { initCreateOverlay } from './utils.js';
+
 adminForm = document.getElementById('adminForm')
 
 adminForm.addEventListener('submit', async (e) => {
@@ -23,29 +25,13 @@ const createBtn = document.getElementById('create')
 const overlayContainer = document.getElementById('overlayCreate')
 const closeBtn = document.getElementById('close')
 
-if (createBtn) {
-    createBtn.addEventListener('click', () => {
-        overlayContainer.classList.add('active')
-    })
-}
-
-closeBtn.addEventListener('click', () => {
-    overlayContainer.classList.remove('active')
-
-    const selects = overlayContainer.querySelectorAll('select')
-    selects.forEach((select) => {
-        select.selectedIndex = 0;
-    })
-
-    const textarea = overlayContainer.querySelector('textarea')
-    if (textarea) textarea.value = ''
-
+initCreateOverlay(createBtn, overlayContainer, closeBtn, () => {
     filesArrayCreateQuestion = []
     previewListCreateQuestion.innerHTML = ``
 })
 
 // render images question admin
-adminQuestionImages = document.querySelectorAll('#adminQuestionImages')
+let adminQuestionImages = document.querySelectorAll('#adminQuestionImages')
 
 
 if (adminQuestionImages) {
@@ -58,8 +44,7 @@ if (adminQuestionImages) {
     })
 }
 // render images answer admin
-adminAnswerImages = document.querySelectorAll('#adminAnswerImages')
-
+let adminAnswerImages = document.querySelectorAll('#adminAnswerImages')
 
 if (adminAnswerImages) {
     adminAnswerImages.forEach((reportA) => {

@@ -1,29 +1,13 @@
+import { initCreateOverlay } from './utils.js';
+
 const createBtn = document.getElementById('create')
 const overlayContainer = document.getElementById('overlayCreate')
 const closeBtn = document.getElementById('close')
-if (createBtn) {
-    createBtn.addEventListener('click', () => {
-        overlayContainer.classList.add('active')
-    })
-}
 
-
-if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-        overlayContainer.classList.remove('active')
-        
-        const selects = overlayContainer.querySelectorAll('select')
-        selects.forEach((select) => {
-            select.selectedIndex = 0;
-        })
-
-        const textarea = overlayContainer.querySelector('textarea')
-        if (textarea) textarea.value = ''
-
-        filesArrayCreateQuestion = []
-        previewListCreateQuestion.innerHTML = ``
-    })
-}
+initCreateOverlay(createBtn, overlayContainer, closeBtn, () => {
+    filesArrayCreateQuestion = []
+    previewListCreateQuestion.innerHTML = ``
+})
 
 const editBtn = document.getElementById('editBtn')
 const editContainer = document.getElementById('editContainer')
@@ -39,6 +23,7 @@ if (editBtn && editContainer) {
     })
 }
 
+const answersList = document.getElementById('answerList')
 answersList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('#editBtn')
     const reportAnswerBtn = e.target.closest('#reportAnswerBtn')

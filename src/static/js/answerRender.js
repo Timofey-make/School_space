@@ -36,7 +36,7 @@ async function start() {
     try {
         answersList.innerHTML = `<p style="text-align: center; margin-top: 20px">Загрузка ответов...</p>`
         const response = await fetch('/api/answers')
-        answers = await response.json()
+        const answers = await response.json()
         render(answers)
     }
     catch (err) {
