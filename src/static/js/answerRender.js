@@ -1,33 +1,9 @@
+import { timeAgo } from './utils.js';
+
 const questionTime = document.getElementById('questionTime')
 const time = questionTime.dataset.questionTime
 
 questionTime.innerHTML = timeAgo(time)
-
-function timeAgo(dateString) {
-    dateString += "Z";
-    const now = new Date();
-    const date = new Date(dateString);
-    const diff = (now - date) / 1000;
-
-    if (diff < 60) {
-        return `${Math.round(diff)} сек. назад`
-    }
-    else if (diff < 3600) {
-        return `${Math.round(diff / 60)} мин. назад`
-    }
-    else if (diff < 86400) {
-        return `${Math.round(diff / 3600)} ч. назад`
-    }
-    else if (diff < 2628000) {
-        return `${Math.round(diff / 86400)} дн. назад`
-    }
-    else if (diff < 31540000){
-        return `${Math.round(diff / 2628000)} мес. назад`
-    }
-    else {
-        return `${date.toLocaleDateString("ru-RU")}`
-    }
-}
 
 
 
@@ -36,7 +12,7 @@ async function start() {
     try {
         answersList.innerHTML = `<p style="text-align: center; margin-top: 20px">Загрузка ответов...</p>`
         const response = await fetch('/api/answers')
-        answers = await response.json()
+        const answers = await response.json()
         render(answers)
     }
     catch (err) {

@@ -47,6 +47,7 @@
 .delete-link {
     color: #b51d25;
     margin-right: auto;
+    cursor: pointer;
 }
 
 
