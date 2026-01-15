@@ -249,6 +249,7 @@ async def get_answers():
             init.Comment.description,
             init.Comment.created_at,
             init.Comment.image_filename,
+            init.Comment.edited,
         ).order_by(init.Comment.id.desc())
         data = conn.execute(stmt).fetchall()
 
@@ -265,6 +266,7 @@ async def get_answers():
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
                 "images": row.image_filename,
+                "edited": row.edited,
             })
         return JSONResponse(content=questions)
 
@@ -301,7 +303,8 @@ async def get_questions():
             init.Question.description,
             init.Question.created_at,
             init.Question.like,
-            init.Question.image_path,  # <-- добавляем поле с путями
+            init.Question.image_path,
+            init.Question.edited,  # <-- добавляем поле с путями
         ).order_by(init.Question.id.desc())
         data = conn.execute(stmt).fetchall()
 
@@ -321,7 +324,8 @@ async def get_questions():
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
                 "like": row.like,
-                "images": image_list,  # <-- теперь тут массив путей
+                "images": image_list,
+                "edited": row.edited,  # <-- теперь тут массив путей
             })
 
         return JSONResponse(content=questions)
@@ -381,6 +385,7 @@ async def question_page(request: Request, note_id: int):
                 init.Question.id,
                 init.Question.created_at,
                 init.Question.image_path,
+                init.Question.edited,
             ).where(init.Question.id == note_id)
             question_data = conn.execute(stmt).fetchone()
 
@@ -398,6 +403,7 @@ async def question_page(request: Request, note_id: int):
                 question_data.id,
                 question_data.created_at,
                 question_data.image_path,
+                question_data.edited,
             ]
 
             # 🔹 Обрабатываем изображения (если несколько — через запятую)
@@ -686,7 +692,8 @@ async def change_question(
             # Подготавливаем данные для обновления
             update_data = {
                 "grade": grade,
-                "subject": subject
+                "subject": subject,
+                "edited": True,
             }
             
             # Обновляем описание только если оно не пустое
@@ -736,7 +743,15 @@ async def change_question(
             stmt = update(init.Question).where(
                 init.Question.id == id
             ).values(**update_data)
-            
+            session.execute(stmt)
+            stmt = select(init.Reportq).where(
+                init.Reportq.question_id == id
+            )
+            data = session.execute(stmt).fetchall()
+            if data:
+                stmt = update(init.Reportq).where(init.Reportq.question_id == id).values({
+                    "edited":True,
+                })    
             session.execute(stmt)
             session.commit()
         
@@ -795,7 +810,9 @@ async def change_answer(
                 return RedirectResponse(f"/question/{questionId}", status_code=303)
             
             # Подготавливаем данные для обновления
-            update_data = {}
+            update_data = {
+                "edited": True,
+            }
             
             # Обновляем описание только если оно не пустое
             if comment.strip():
@@ -846,9 +863,17 @@ async def change_answer(
                     init.Comment.id == id,
                     init.Comment.owner == current_user
                 ).values(**update_data)
-                
-                session.execute(stmt)
-                session.commit()
+            session.execute(stmt)
+            stmt = select(init.Reporta).where(
+                init.Reporta.answer_id == id
+            )
+            data = session.execute(stmt).fetchall()
+            if data:
+                stmt = update(init.Reporta).where(init.Reporta.answer_id == id).values({
+                    "edited":True,
+                })    
+            session.execute(stmt)
+            session.commit()
         
         return RedirectResponse(f"/question/{questionId}", status_code=303)
     
@@ -962,6 +987,7 @@ async def adminpanel(request: Request):
                 "reson": r.reason,
                 "text": r.description,
                 "image": r.image,
+                "edited": r.edited,
             }
             for r in report_questions
         ]
@@ -976,6 +1002,7 @@ async def adminpanel(request: Request):
                 "reson": r.reason,
                 "text": r.description,
                 "image": r.image,
+                "edited": r.edited,
             }
             for r in report_answers
         ]

@@ -1,4 +1,4 @@
-import { toHTML, timeAgo, initCreateOverlay, uploadQuestionCreate } from './utils.js';
+import { toHTML, timeAgo, initCreateOverlay, uploadQuestionCreate, getTrigrams } from './utils.js';
 
 const questionsList = document.querySelector('#questionsList')
 const seacrhInput = document.querySelector('#search')
@@ -19,18 +19,6 @@ async function start() {
     }
 }
 
-function getTrigrams(str) {
-    const trigrams = []
-    if (str.length < 3) {
-        return [str];
-    }
-
-    for (let i = 0; i <= str.length - 3; i++) {
-        trigrams.push(str.slice(i, i + 3));
-    }
-    return trigrams;
-}
-
 
 function applyFilters() {
     const value = seacrhInput.value.toLowerCase()
@@ -45,8 +33,8 @@ function applyFilters() {
         }
         else {
             filtered = filtered.filter((question) => {
-                textTrigrams = getTrigrams(question.text.toLowerCase())
-                valueTrigrams = getTrigrams(value)
+                const textTrigrams = getTrigrams(question.text.toLowerCase())
+                const valueTrigrams = getTrigrams(value)
                 if (textTrigrams.length === 0 || valueTrigrams.length === 0) {
                     return false;
                 }

@@ -17,7 +17,11 @@
             <a class="header-logo" href="/">
                 <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
             </a>
-            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            <div class="search">
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+                <ul class="search-result-list" id="searchList">
+                </ul>
+            </div>
             
             <div class="header-actions">
                 {% if username %}

@@ -1,4 +1,4 @@
-import { toHTML, initCreateOverlay, uploadQuestionCreate } from './utils.js';
+import { toHTML, initCreateOverlay, uploadQuestionCreate, searchResult } from './utils.js';
 
 const profileQuestionsContainer = document.getElementById('profileQuestionsContainer')
 
@@ -78,3 +78,12 @@ window.addEventListener('DOMContentLoaded', () => {
         radio.checked = false;
     });
 });
+
+// search
+const searchEl = document.getElementById('search')
+const searchList = document.getElementById('searchList')
+searchResult(searchEl, searchList)
+
+document.addEventListener('click', (e) => {
+    searchList.classList.remove('active')
+})

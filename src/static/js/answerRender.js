@@ -62,6 +62,7 @@ function toHTML(answer) {
         <div class="questions-item-header">
             <a class="link" href="/profile/${answer.username}">${answer.name} (${answer.username})</a>
             <div>${timeAgo(answer.created_at)}</div>
+            <div>${answer.edited ? "Изменено" : ""}</div>
         </div>
         <div class="answer-text short-text">${answer.text}</div>
         ${answer.text.split('\n').length > 3 ? `

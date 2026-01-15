@@ -33,6 +33,7 @@ export function toHTML(question) {
             <div class="item-header-subject">${question.subject}</div>
             <div class="item-header-grade">${question.grade} класс</div>
             <div class="item-header-time">${timeAgo(question.created_at)}</div>
+            <div class="item-header-time">${question.edited ? 'Измененно' : '' }</div>
         </div>
         <div class="questions-item-body">${question.text}</div>
 
@@ -171,3 +172,86 @@ export function closeModal() {
 }
 
 window.closeModal = closeModal
+
+
+// search
+function toSearchItemHTML(question) {
+    return `<li class="search-result-item">
+        <div class="questions-item-header">
+            <a href="/profile/${question.username}" class="item-header-name link">
+                ${question.name} (${question.username})
+            </a>
+            <div class="item-header-subject">${question.subject}</div>
+            <div class="item-header-grade">${question.grade} класс</div>
+            <div class="item-header-time">${timeAgo(question.created_at)}</div>
+        </div>
+        <div class="questions-item-body">${question.text}</div>
+
+        
+
+        <div class="questions-item-footer">
+            <a class="btn" href="/question/${question.id}">Ответить</a>
+        </div>
+    </li>`;
+}
+
+function render(questions = []) {
+    if (questions.length === 0) {
+        searchList.innerHTML = `<p style="text-align: center;">Ничего не найдено</p>`
+    }
+    else {
+        const html = questions.map(toSearchItemHTML).join('')
+        searchList.innerHTML = html
+    }
+}
+
+export function getTrigrams(str) {
+    const trigrams = []
+    if (str.length < 3) {
+        return [str];
+    }
+
+    for (let i = 0; i <= str.length - 3; i++) {
+        trigrams.push(str.slice(i, i + 3));
+    }
+    return trigrams;
+}
+
+
+export function searchResult(searchEl, searchList) {
+    searchEl.addEventListener('input', async (e) => {
+        const value = e.target.value.trim()
+        if (!value) {
+            searchList.classList.remove('active')
+            searchList.innerHTML = ''
+            return
+        }
+
+        searchList.classList.add('active')
+        try {
+            const response = await fetch('/api/questions')
+            let questions = await response.json()
+            let filtered = questions
+            if (value.length < 3) {
+                filtered = filtered.filter((question) => question.text.toLowerCase().includes(value))
+            }
+            else {
+                filtered = filtered.filter((question) => {
+                    let textTrigrams = getTrigrams(question.text.toLowerCase())
+                    let valueTrigrams = getTrigrams(value)
+                    if (textTrigrams.length === 0 || valueTrigrams.length === 0) {
+                        return false;
+                    }
+                    const textSet = new Set(textTrigrams);
+
+                    return valueTrigrams.some(tri => textSet.has(tri));
+                })
+            }
+            render(filtered)
+        }
+        catch (err) {
+            searchList.innerHTML = `<p style="text-align: center;">Ошибка при загрузке вопросов</p>`
+            console.log(err)
+        }
+    })
+}
