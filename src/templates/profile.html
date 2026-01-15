@@ -37,13 +37,13 @@
             <div class="question">
                 <div class="profile-name">{{ account[1] }} ({{ account[2] }})</div>
                 <div class="profile-additional">ID: {{ account[0] }}</div>
-                <div class="profile-additional" style="color: {{ account[4] }};">{{ account[3] }}</div>
+                <div class="profile-additional" style="color: {{ account[4] }}">{{ account[3] }}</div>
 
                 {% if username == account[2] and (account[5] or account[0] == 1)%}
                 <a class="link admin-link" href="/admin/panel">Перейти в админ-панель</a>
                 {% endif %}
                 {% if username == account[2] %}
-                <a class="link logout-link" href="/logout">Выйти из аккаунта</a>
+                <a class="link logout-link" href="/users/logout">Выйти из аккаунта</a>
                 {% endif %}
                 {% if id == "1" or admin or username == account[2] %}
                 <a class="link delete-link" id="deleteProfile">Удалить аккаунт</a>

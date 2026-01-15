@@ -137,7 +137,7 @@ export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreate
             })
 
             try {
-                const response = await fetch('/doadd', {
+                const response = await fetch('/questions/doadd', {
                     method: 'POST',
                     body: formData
                 });

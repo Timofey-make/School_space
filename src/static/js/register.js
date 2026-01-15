@@ -5,7 +5,7 @@ registerForm.addEventListener('submit', async (e) => {
 
     const registerData = new FormData(e.target)
 
-    const response = await fetch("/doregister", {
+    const response = await fetch("/users/doregister", {
         method: "POST",
         body: registerData
     });
