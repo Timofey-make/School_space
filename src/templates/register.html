@@ -16,8 +16,7 @@
         </a>
         <div class="auth">
             <h1 class="auth-title">Регистрация</h1>
-            <form id="registerForm" class="auth-form" method="post" action="/doregister">
-                <div class="form-name">
+                <form id="registerForm" class="auth-form" method="post" action="http://127.0.0.1:8000/users/doregister">                <div class="form-name">
                     <label class="form-login-title" for="name">Имя</label>
                     <input class="input" name="name" id="name" type="text" placeholder="Введите имя" maxlength="15" required>
                 </div>
@@ -31,7 +30,7 @@
                 </div>
                 <button class="btn" type="submit">Зарегистрироваться</button>
             </form>
-            <a class="auth-link link" href="/login">Есть аккаунт? Вход</a>
+            <a class="auth-link link" href="/users/login">Есть аккаунт? Вход</a>
             <p id="errorMessage" class="error"></p>
         </div>
     </div>

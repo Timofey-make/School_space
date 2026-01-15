@@ -16,7 +16,7 @@
         </a>
         <div class="auth">
             <h1 class="auth-title">Вход</h1>
-            <form id="loginForm" class="auth-form" method="post" action="/dologin">
+            <form id="loginForm" class="auth-form" method="post" action="/users/dologin">
                 <div class="form-login">
                     <label class="form-login-title" for="login">Логин</label>
                     <input class="input" name="auth" id="login" type="text" placeholder="Введите логин" maxlength="15" required>
@@ -27,7 +27,7 @@
                 </div>
                 <button class="btn" type="submit">Войти</button>
             </form>
-            <a class="auth-link link" href="/register">Регистрация</a>
+            <a class="auth-link link" href="/users/register">Регистрация</a>
             <p id="errorMessage" class="error"></p>
         </div>
     </div>

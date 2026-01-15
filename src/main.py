@@ -8,6 +8,11 @@ from datetime import datetime
 from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
 import time
+import os
+import uuid
+from fastapi import FastAPI, Request, Form, File, UploadFile
+from fastapi.responses import RedirectResponse
+from sqlalchemy.orm import Session
 from requests import session
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
@@ -15,20 +20,29 @@ from sqlalchemy import update
 import uuid
 import shutil
 from fastapi import UploadFile, File
-
-from . import init
-from . import function
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi import Depends
+import init
+import function
 import sqlite3
 import uvicorn
-
+from fastapi.exceptions import RequestValidationError
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from fastapi import FastAPI
 import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
+from routers import users
+from routers import questions
 
 app = FastAPI()
 from fastapi.staticfiles import StaticFiles
 import os
+
+app.include_router(users.router)
+app.include_router(questions.router)
 
 init.Base.metadata.create_all(init.engine)
 # Абсолютный путь до папки static
@@ -45,7 +59,28 @@ BASE_DIR = Path(__file__).resolve().parent
 # app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
-from starlette.exceptions import HTTPException as StarletteHTTPException
+async def check_user_exists(request: Request):
+    user_id = request.cookies.get("id")
+    if user_id:
+        try:
+            with Session(init.engine) as session:
+                user = session.get(init.User, int(user_id))
+                if not user:
+                    # Пользователь удален - возвращаем редирект
+                    response = RedirectResponse(url="/logout", status_code=303)
+                    response.delete_cookie(key="id")
+                    response.delete_cookie(key="name")
+                    response.delete_cookie(key="username")
+                    return response
+        except (ValueError, TypeError):
+            # Некорректный user_id в куках
+            response = RedirectResponse(url="/logout", status_code=303)
+            response.delete_cookie(key="id")
+            response.delete_cookie(key="name")
+            response.delete_cookie(key="username")
+            return response
+    # Если все хорошо, возвращаем None или True
+    return None
 
 @app.exception_handler(404)
 async def not_found(request: Request, exc: StarletteHTTPException):
@@ -54,11 +89,6 @@ async def not_found(request: Request, exc: StarletteHTTPException):
         {"request": request},
         status_code=404
     )
-from fastapi.exceptions import RequestValidationError
-from fastapi import Request
-from fastapi.responses import JSONResponse
-from fastapi import FastAPI
-
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return templates.TemplateResponse(
@@ -67,181 +97,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=404
     )
 
-
-@app.get("/logout", tags="Выход")
-async def logout(request: Request):
-    # Создаем редирект-ответ
-    redirect = RedirectResponse(url="/", status_code=303)
-    # Устанавливаем куки
-    redirect.delete_cookie(key="id")
-    redirect.delete_cookie(key="name")
-    redirect.delete_cookie(key="username")
-    return redirect
-
-@app.get("/register", tags="Регистрация")
-async def register(request: Request):
-    if request.cookies.get("id"):
-        return RedirectResponse(url="/", status_code=303)
-    else:
-        return templates.TemplateResponse("register.html", {"request": request})
-
-@app.post("/doregister", tags="Регистрация")
-async def doregister(
-    request: Request,
-    name: str = Form(...),
-    login: str = Form(...),
-    password: str = Form(...),
-):
-    login = login.strip()
-    name = name.strip()
-
-    if " " in login or " " in name:
-        return JSONResponse({"error": "Логин или имя не может содержать пробелы"}, status_code=400)
-    
-    with Session(init.engine) as conn:
-        stmt = select(init.User).where(init.User.username == login)
-        data = conn.execute(stmt).fetchall()
-        if data:
-            return JSONResponse({"error": "Пользователь с таким логином уже есть"}, status_code=400)
-
-        else:
-            user = init.User(
-                name=name,
-                username=login,
-                password=function.hash_password(password),
-                title="Новичок",
-                background="#333333",
-                min_points=0
-            )
-            conn.add(user)
-            conn.commit()
-    conn = Session(init.engine)
-    stmt = select(init.User).where(init.User.username == login)
-    id = conn.execute(stmt).fetchall()[0][0].id
-    conn.commit()
-    conn.close()
-    redirect = RedirectResponse(url="/", status_code=303)
-    # Устанавливаем куки
-    redirect.set_cookie(key="id", value=str(id))
-    redirect.set_cookie(key="name", value=function.encrypt(name))
-    redirect.set_cookie(key="username", value=function.encrypt(login))
-    return redirect
-
-@app.get("/login", tags="Логин")
-async def login(request: Request):
-    if request.cookies.get("id"):
-        return RedirectResponse(url="/", status_code=303)
-    else:
-        return templates.TemplateResponse("auth.html", {"request": request})
-
-@app.post("/dologin", tags="Логин")
-async def dologin(
-    request: Request,
-    auth: str = Form(...),
-    password: str = Form(...)
-):
-    error = True
-    with Session(init.engine) as conn:
-        stmt = select(init.User).where(init.User.username == auth)
-        data = conn.execute(stmt).fetchall()
-        if data and data[0][0].password == function.hash_password(password):
-            # Создаем редирект-ответ
-            redirect = RedirectResponse(url="/", status_code=303)
-            # Устанавливаем куки
-            redirect.set_cookie(key="id", value=str(data[0][0].id))
-            redirect.set_cookie(key="name", value=function.encrypt(data[0][0].name))
-            redirect.set_cookie(key="username", value=function.encrypt(data[0][0].username))
-            return redirect
-        else:
-            return JSONResponse({"error": "Неверный логин или пароль"}, status_code=400)
-
-@app.get("/add", tags="Добавить вопрос")
-async def add(request: Request):
-    if request.cookies.get("id"):
-        return templates.TemplateResponse("add_question.html", {"request": request})
-    else:
-        return RedirectResponse(url="/login", status_code=303)
-
-import os
-import uuid
-from fastapi import FastAPI, Request, Form, File, UploadFile
-from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
-
-
-@app.post("/doadd", tags=["Добавить вопрос"])
-async def doadd(
-    request: Request,
-    subject: str = Form(...),
-    grade: str = Form(...),
-    description: str = Form(""),
-    images: list[UploadFile] = File(None)
-):
-    try:
-        # Проверка на пустой вопрос
-        if not description.strip() and (not images or len(images) == 0):
-            return RedirectResponse(url="/?error=empty_content", status_code=303)
-
-        saved_paths = []
-
-        # Создаем папку для изображений, если не существует
-        # вместо "./SchoolProject/src/static/images"
-        save_dir = os.path.join(static_dir, "images")
-        os.makedirs(save_dir, exist_ok=True)
-
-
-        # Обрабатываем каждое изображение
-        if images:
-            for image in images:
-                if not image.filename:
-                    continue
-
-                # Проверяем тип файла
-                if not image.content_type.startswith("image/"):
-                    continue
-
-                # Генерируем уникальное имя файла
-                ext = image.filename.split('.')[-1]
-                filename = f"{uuid.uuid4()}.{ext}"
-                filepath = os.path.join(save_dir, filename)
-
-                # Сохраняем файл
-                with open(filepath, "wb") as f:
-                    f.write(await image.read())
-
-                # Добавляем путь в список
-                saved_paths.append(f"/static/images/{filename}")
-
-        # Можно хранить пути как JSON, список или строку через запятую
-        image_paths_str = ",".join(saved_paths) if saved_paths else None
-
-        # Добавляем запись в базу
-        with Session(init.engine) as conn:
-            question = init.Question(
-                owner=function.decrypt(request.cookies.get("username")),
-                owner_name=function.decrypt(request.cookies.get("name")),
-                subject=subject,
-                grade=grade,
-                description=description.strip(),
-                image_path=image_paths_str
-            )
-            conn.add(question)
-            conn.commit()
-
-            # Повышение уровня пользователя и т.п.
-            function.upgrade(request.cookies.get("id"))
-            function.upgrade_title(request.cookies.get("id"))
-
-        # Успешный редирект
-        return RedirectResponse(url="/", status_code=303)
-
-    except Exception as e:
-        print(f"Ошибка при добавлении вопроса: {e}")
-        return RedirectResponse(url="/?error=server_error", status_code=303)
-
 @app.get("/api/answers", tags=["API"])
 async def get_answers():
     with Session(init.engine) as conn:
+        # Получаем все комментарии
         stmt = select(
             init.Comment.id,
             init.Comment.question_id,
@@ -251,25 +110,32 @@ async def get_answers():
             init.Comment.image_filename,
             init.Comment.edited,
         ).order_by(init.Comment.id.desc())
-        data = conn.execute(stmt).fetchall()
-
+        
+        comments = conn.execute(stmt).fetchall()
         questions = []
-        for row in data:
-            stmt = select(init.User.name).where(init.User.username == row.owner)
-            data1 = conn.execute(stmt).fetchall()
-            print(data1)
+        
+        # Предварительно получаем всех пользователей для оптимизации
+        users_stmt = select(init.User.username, init.User.name)
+        users = conn.execute(users_stmt).fetchall()
+        user_dict = {username: name for username, name in users}
+        
+        for row in comments:
+            # Получаем имя пользователя из словаря, или используем username как fallback
+            name = user_dict.get(row.owner, row.owner)
+            
             questions.append({
                 "id": row.id,
                 "question_id": row.question_id,
-                "name": data1[0].name,
+                "name": name,  # теперь это строка, а не список
                 "username": row.owner,
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
                 "images": row.image_filename,
                 "edited": row.edited,
             })
+        
         return JSONResponse(content=questions)
-
+    
 @app.get("/api/like", tags=["API"])
 async def get_like():
     with Session(init.engine) as conn:
@@ -358,15 +224,18 @@ async def get_users():
 
 
 @app.get("/", tags="Главная")
-async def main(request: Request):
-        if request.cookies.get("id"):
-            return templates.TemplateResponse("main.html", {"request": request,
-                                                            "username": function.decrypt(request.cookies.get("username")),
-                                                            "name": function.decrypt(request.cookies.get("name")),})
-        else:
-            return templates.TemplateResponse("main.html", {"request": request,
-                                                            "username": None,
-                                                            "name": None,})  
+async def main(request: Request, user_check = Depends(check_user_exists)):
+    if isinstance(user_check, RedirectResponse):
+        return user_check
+        
+    if request.cookies.get("id"):
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": function.decrypt(request.cookies.get("username")),
+                                                        "name": function.decrypt(request.cookies.get("name")),})
+    else:
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": None,
+                                                        "name": None,})
  
 @app.get("/question/{note_id}", tags=["Страница вопроса"])
 async def question_page(request: Request, note_id: int):
@@ -1235,9 +1104,9 @@ async def delete_account(
         stmt = select(init.User).where(init.User.id == id)
         target_user = session.scalar(stmt)
 
-        if not target_user:
+        if not target_user or target_user.id == 1:
             return RedirectResponse("/", status_code=303)
-
+        
         # Проверка прав
         if not current_user or (current_user.id != 1 and not current_user.is_admin) and (id != cookie_user_id):
             return RedirectResponse("/", status_code=303)
