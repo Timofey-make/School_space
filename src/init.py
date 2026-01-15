@@ -42,6 +42,7 @@ class Question(Base):
     like: Mapped[int] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     image_path: Mapped[str] = mapped_column(String(500), nullable=True)  # Добавьте это поле
+    edited: Mapped[bool] = mapped_column(Boolean, default=False)
     def __repr__(self) -> str:
         return f"Question(id={self.id!r}, owner={self.owner!r}, owner_name={self.owner_name!r}, subject={self.subject!r}, title={self.title!r}, description={self.description!r}, created={self.created_at!r}, image_path={self.image_path!r})"
 
@@ -53,6 +54,7 @@ class Comment(Base):
     description: Mapped[str] = mapped_column(String(1000))
     image_filename: Mapped[str] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    edited: Mapped[bool] = mapped_column(Boolean, default=False)
     def __repr__(self) -> str:
         return f"Question(id={self.id!r}, owner={self.owner!r}, question_id={self.question_id!r}, description={self.description!r}, image_filename={self.image_filename!r} created_at={self.created_at!r})"
     
@@ -65,7 +67,7 @@ class Reportq(Base):
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(String(1000))  # ← лучше указать длину
     image: Mapped[str] = mapped_column(String(500), nullable=True)
-    
+    edited: Mapped[bool] = mapped_column(Boolean, default=False)
     def __repr__(self) -> str:
         return f"Reportq(id={self.id!r}, question_id={self.question_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"  # ← исправлено: self.image!r
 
@@ -77,7 +79,7 @@ class Reporta(Base):
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str]
     image: Mapped[str] = mapped_column(String(500), nullable=True)
-    
+    edited: Mapped[bool] = mapped_column(Boolean, default=False)
     def __repr__(self) -> str:
         return f"Reporta(id={self.id!r}, answer_id={self.answer_id!r}, reason={self.reason!r}, description={self.description!r}, image={self.image!r})"
 

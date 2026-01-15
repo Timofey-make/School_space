@@ -17,8 +17,32 @@
             <a class="header-logo" href="/">
                 <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
             </a>
-            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            <div class="search">
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+                <ul class="search-result-list" id="searchList">
+                </ul>
+            </div>
             
+            <!-- <div class="search-result">
+                <li class="questions-content-item">
+                    <div class="questions-item-header">
+                        <a href="/profile/${question.username}" class="item-header-name link">
+                            Андрей (Andrey)
+                        </a>
+                        <div class="item-header-subject">Математика</div>
+                        <div class="item-header-grade">8 класс</div>
+                        <div class="item-header-time">5 минут назад</div>
+                    </div>
+                    <div class="questions-item-body">Вопрос 1</div>
+                    <div class="question-images">
+                        <img src="{{ url_for('static', path='images/0b0b55d5-22e2-43c5-a1cb-492f7fd2515b.png') }}" alt="Изображение" class="question-image">
+                    </div>
+
+                    <div class="questions-item-footer">
+                        <a class="btn" href="/question/${question.id}">Ответить</a>
+                    </div>
+                </li>
+            </div> -->
             <div class="header-actions">
                 {% if username %}
                     <button id="create" class="btn header-actions-create">Создать вопрос</button>
@@ -62,6 +86,9 @@
                     <div id="questionSubject">{{ result[2] }}</div>
                     <div id="questionGrade">{{ result[3] }} класс</div>
                     <div id="questionTime" data-question-time="{{ result[6] }}"></div>
+                    {% if result[8] %}
+                    <div id="questionGrade">Изменено</div>
+                    {% endif %}
                 </div>
                 <div id="questionContent" class="answer-text">{{ result[4]|safe }}</div>
                 {% if images %}

@@ -1,4 +1,4 @@
-import { initCreateOverlay, openModal, closeModal, uploadQuestionCreate } from './utils.js';
+import { initCreateOverlay, openModal, closeModal, uploadQuestionCreate, timeAgo, searchResult } from './utils.js';
 
 // create question overlay
 const createBtn = document.getElementById('create')
@@ -155,6 +155,7 @@ document.addEventListener('click', (e) => {
     activeContainers.forEach(container => {
         container.classList.remove('active');
     });
+    searchList.classList.remove('active')
 });
 
 
@@ -524,3 +525,16 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('answerTextArea').value = ''
 });
 
+
+// search
+const searchEl = document.getElementById('search')
+const searchList = document.getElementById('searchList')
+searchResult(searchEl, searchList)
+    
+// ${question.images && question.images.length > 0 ? `
+//             <div class="question-images">
+//                 ${question.images.map(src => `
+//                     <img src="${src}" alt="Изображение" class="question-image">
+//                 `).join('')}
+//             </div>
+//         ` : ''}

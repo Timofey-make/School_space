@@ -17,7 +17,11 @@
             <a class="header-logo" href="/">
                 <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
             </a>
-            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            <div class="search">
+                <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+                <ul class="search-result-list" id="searchList">
+                </ul>
+            </div>
             
             <div class="header-actions">
                 {% if username %}
@@ -51,6 +55,9 @@
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ question.qid }}</div>
                         <div class="item-header-subject">{{ question.reson }}</div>
+                        {% if question.edited %}
+                        <div class="item-header-subject">Изменено</div>
+                        {% endif %}
                     </div>
                     <a href="/question/{{ question.qid }}" class="questions-item-body link">{{ question.text|safe }}</a>
                     {% if question['image'] %}
@@ -86,6 +93,9 @@
                     <div class="questions-item-header">
                         <div class="item-header-name">ID: {{ answer.id }}</div>
                         <div class="item-header-subject">{{ answer.reson }}</div>
+                        {% if answer.edited %}
+                        <div class="item-header-subject">Изменено</div>
+                        {% endif %}
                     </div>
                     <a href="/question/{{ answer['id'] }}" class="questions-item-body link">{{ answer.text|safe }}</a>
                     {% if answer['image'] %}

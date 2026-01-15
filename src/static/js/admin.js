@@ -1,4 +1,4 @@
-import { initCreateOverlay, uploadQuestionCreate, openModal, closeModal } from './utils.js';
+import { initCreateOverlay, uploadQuestionCreate, openModal, closeModal, searchResult } from './utils.js';
 
 adminForm = document.getElementById('adminForm')
 
@@ -72,3 +72,12 @@ window.addEventListener('DOMContentLoaded', () => {
         radio.checked = false;
     });
 });
+
+// search
+const searchEl = document.getElementById('search')
+const searchList = document.getElementById('searchList')
+searchResult(searchEl, searchList)
+
+document.addEventListener('click', (e) => {
+    searchList.classList.remove('active')
+})
