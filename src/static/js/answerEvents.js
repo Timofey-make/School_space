@@ -268,9 +268,6 @@ const imageInputCreateQuestion = document.getElementById('imageInputCreateQuesti
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
 uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
 
-
-
-
 // change question upload
 const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
 const previewListChangeQuestion = document.getElementById('previewListChangeQuestion')
@@ -335,7 +332,7 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
 
 
         try {
-            const response = await fetch('/change', {
+            const response = await fetch('/questions/change', {
                 method: 'POST',
                 body: formData
             });
@@ -413,7 +410,7 @@ if (imageInputCreateAnswer && previewListCreateAnswer) {
 
 
         try {
-            const response = await fetch('/addcomment', {
+            const response = await fetch('/answers/addcomment', {
                 method: 'POST',
                 body: formDataAnswer
             });
@@ -494,7 +491,7 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
 
 
         try {
-            const response = await fetch('/change_answer', {
+            const response = await fetch('/answers/change_answer', {
                 method: 'POST',
                 body: formDataAnswer
             });

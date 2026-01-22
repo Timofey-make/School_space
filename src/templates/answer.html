@@ -106,7 +106,7 @@
                 <h1 class="answers-title">Ответы</h1>
                 {% if username %}
                 <div class="questions-content-item">
-                    <form action="/addcomment" method="post" class="answer-textarea" id="formCreateAnswer">
+                    <form action="/answers/addcomment" method="post" class="answer-textarea" id="formCreateAnswer">
                         <label for="answerTextArea">Хотите ответить?</label>
                         <input type="hidden" value="{{ result[5] }}" name="id">
                         <textarea class="form-text-textarea-answer" name="comment" id="answerTextArea" required minlength="1" maxlength="10000"></textarea>
@@ -196,7 +196,7 @@
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить вопрос?</div>
                 <div class="sure-delete-btns">
-                    <form action="/delete" method="post">
+                    <form action="/questions/delete" method="post">
                         <input type="hidden" name="description" value='{{ result[4] }}'>
                         <input type="hidden" name="owner" value="{{ result[0] }}">
                         <input type="hidden" name="question_id" value="{{ result[5] }}">
@@ -219,7 +219,7 @@
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить ответ?</div>
                 <div class="sure-delete-btns">
-                    <form action="/delete_answer" method="post">
+                    <form action="/answers/delete_answer" method="post">
                         <input id="deleteAnswerOwner" type="hidden" name="owner" value="">
                         <input id="deleteAnswerId" type="hidden" name="id" value="">
                         <input id="deleteAnswerQuestionId" type="hidden" name="questionId" value="">
@@ -240,7 +240,7 @@
                 <button class="create-close-btn" id="closeChangeQuestionContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/change" method="post" class="create-form" id="formChangeQuestion">
+                <form action="/questions/change" method="post" class="create-form" id="formChangeQuestion">
                     <div class="create-form-text">
                         <label for="questionText">Что изменить?</label>
                         <input type="hidden" name="description" value='{{ result[4] }}'>
@@ -303,7 +303,7 @@
                 <button class="create-close-btn" id="closeChangeAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/change_answer" method="post" class="create-form" id="formChangeAnswer">
+                <form action="/answers/change_answer" method="post" class="create-form" id="formChangeAnswer">
                     <div class="create-form-text">
                         <label for="questionText">Что изменить?</label>
                         <input id="changeAnswerOwner" type="hidden" name="owner" value="">
@@ -332,7 +332,7 @@
                 <button class="create-close-btn" id="closeReportQuestionContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/report_question" method="post" class="create-form">
+                <form action="/questions/report_question" method="post" class="create-form">
                     <div class="report-title">Выберите причину жалобы</div>
                     
                     <input id="reportQuestionQuestionId" type="hidden" name="questionId" value="{{ result[5] }}">
@@ -373,7 +373,7 @@
                 <button class="create-close-btn" id="closeReportAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/report_answer" method="post" class="create-form">
+                <form action="/answers/report_answer" method="post" class="create-form">
                     <div class="report-title">Выберите причину жалобы</div>
                     <input id="reportAnswerId" type="hidden" name="answerId" value="">
                     <input id="reportAnswerQuestionId" type="hidden" name="questionId" value="">
