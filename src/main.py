@@ -22,8 +22,8 @@ import shutil
 from fastapi import UploadFile, File
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Depends
-import init
-import function
+from . import init
+from . import function
 import sqlite3
 import uvicorn
 from fastapi.exceptions import RequestValidationError
@@ -34,8 +34,8 @@ import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-from routers import users
-from routers import questions
+from src.routers import users
+from src.routers import questions
 
 app = FastAPI()
 from fastapi.staticfiles import StaticFiles
