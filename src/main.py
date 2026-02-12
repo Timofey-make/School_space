@@ -22,8 +22,14 @@ import shutil
 from fastapi import UploadFile, File
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Depends
-from . import init
-from . import function
+import sys
+import os
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+import init
+import function
+from routers import users, questions, api, answers, admin
 import sqlite3
 import uvicorn
 from fastapi.exceptions import RequestValidationError
@@ -70,7 +76,7 @@ async def check_user_exists(request: Request):
                     response.delete_cookie(key="username")
                     return response
         except (ValueError, TypeError):
-            response = RedirectResponse(url="/logout", status_code=303)
+            response = RedirectResponse(url="/users/logout", status_code=303)
             response.delete_cookie(key="id")
             response.delete_cookie(key="name")
             response.delete_cookie(key="username")
@@ -91,6 +97,20 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         {"request": request},
         status_code=404
     )
+
+@app.get("/", tags="Главная")
+async def main(request: Request, user_check = Depends(check_user_exists)):
+    if isinstance(user_check, RedirectResponse):
+        return user_check
+        
+    if request.cookies.get("id"):
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": function.decrypt(request.cookies.get("username")),
+                                                        "name": function.decrypt(request.cookies.get("name")),})
+    else:
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": None,
+                                                        "name": None,})
  
 @app.get("/question/{note_id}", tags=["Страница вопроса"])
 async def question_page(request: Request, note_id: int):
