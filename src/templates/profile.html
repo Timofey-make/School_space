@@ -125,7 +125,7 @@
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить аккаунт?</div>
                 <div class="sure-delete-btns">
-                    <form action="/delete_account" method="post">
+                    <form action="/users/delete_account" method="post">
                         <input id="deleteAccountId" type="hidden" name="id" value="{{ account[0] }}">
                         <button type="submit" class="btn delete-sure">
                             Удалить
