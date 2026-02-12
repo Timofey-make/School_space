@@ -15,7 +15,7 @@ body {
     column-gap: 20px;
 }
 .header-logo {
-    flex: 0 0 auto;
+    flex-shrink: 0;
 }
 .header-logo img {
     width: 70px;
@@ -46,9 +46,6 @@ body {
 .search-result-list.active {
     display: flex;
 }
-
-
-
 .search-result-item {
     display: flex;
     flex-direction: column;
@@ -63,10 +60,29 @@ body {
     display: flex;
     align-items: center;
     column-gap: 20px;
+    justify-content: end;
 }
 
 .header-actions-create {
     white-space: nowrap;
+}
+
+
+@media (max-width: 767px) {
+    /* header */
+    .header-inner {
+        row-gap: 10px;
+        display: grid;
+        grid-template-columns: auto 1fr;
+    }
+
+    .search {
+        order: 1;
+        grid-column: 1 / span 2;
+    }
+    .header-actions-create {
+        white-space: nowrap;
+    }
 }
 
 /* Questions */
@@ -303,26 +319,6 @@ body {
 }
 
 @media (max-width: 767px) {
-    /* header */
-    .header-inner {
-        flex-wrap: wrap;
-        row-gap: 10px;    
-    }
-    .header-logo {
-        order: 1;
-    }
-
-    .header-actions {
-        order: 2;   
-    }
-    .header-logo img {
-        width: 60px;
-    }
-
-    .search-input {
-        order: 3;
-        width: 100%;
-    }
     /* questions */
     .questions-filter-list {
         min-width: 180px;
