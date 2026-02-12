@@ -6,8 +6,8 @@ from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 from sqlalchemy import update
-import init
-import function
+from src import init
+from src import function
 import os
 import uuid
 
@@ -15,6 +15,7 @@ router = APIRouter(
     prefix="/questions",
     tags=["Questions"]
 )
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 static_dir = BASE_DIR / "static"
 templates = Jinja2Templates(directory=BASE_DIR / "templates")

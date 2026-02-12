@@ -16,11 +16,11 @@
             <a class="header-logo" href="/">
                 <img src="{{ url_for('static', path='imgs/logo.png') }}" width="60" height="60" alt="Логотип">
             </a>
-            <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
+            <input type="text" id="search" class="input search" placeholder="Может вопрос уже задан?">
             
             <div class="header-actions">
                 {% if username %}
-                    <button id="create" class="btn header-actions-create">Создать вопрос</button>
+                    <button id="create" class="header-actions-create btn">Создать вопрос</button>
                     <a href="/profile/{{ username }}" class="link">{{ name }}</a>
                 {% else %}
                     <a href="/users/login" class="link">Войти</a>

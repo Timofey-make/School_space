@@ -354,7 +354,7 @@ input[type="radio"] {
 
 @media (max-width: 480px) {
   .btn {
-    font-size: 14px;
-    padding: 12px;
+    font-size: 8px;
+    padding: 5px;
   }
 }

@@ -48,7 +48,7 @@
                     <button id="create" class="btn header-actions-create">Создать вопрос</button>
                     <a href="/profile/{{ username }}" class="link">{{ name }}</a>
                 {% else %}
-                    <a href="/login" class="link">Войти</a>
+                    <a href="/users/login" class="link">Войти</a>
                 {% endif %}
             </div>
         </header>
@@ -124,7 +124,7 @@
                 </div>
                 {% else %}
                 <div class="question answer-login">
-                    <p>Хотите ответить? <a href="/login" class="link">Войти</a></p>
+                    <p>Хотите ответить? <a href="/users/login" class="link">Войти</a></p>
                 </div>
                 {% endif %}
                 <ul id="answerList" class="questions-content-list" data-questionid="{{ result[5] }}" data-username="{{ username }}">
