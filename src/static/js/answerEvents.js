@@ -156,6 +156,7 @@ document.addEventListener('click', (e) => {
         container.classList.remove('active');
     });
     searchList.classList.remove('active')
+    console.log(searchList)
 });
 
 
