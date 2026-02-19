@@ -214,9 +214,9 @@
     font-weight: 700;
     font-size: clamp(20px, 1.22vw, 32px);
 }
-.label-report {
+/* .label-report {
     height: 100%;
-}
+} */
 .report-submit-btn {
     margin-top: auto;
 }

@@ -136,6 +136,12 @@ body {
     padding: 15px;
     padding-top: 30px;
 }
+@media (max-width: 767px) {
+    .questions-content-item {
+        gap: 10px;
+        padding-top: 20px;
+    }
+}
 .questions-item-filter {
     display: flex;
     gap: 30px;
