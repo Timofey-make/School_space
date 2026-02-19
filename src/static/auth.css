@@ -2,7 +2,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px; /* чтобы контент не прилипал к краям на мобилках */
+  padding: 20px;
 }
 
 .auth-container {
@@ -20,11 +20,12 @@ body {
 .auth {
   display: flex;
   flex-direction: column;
-  padding: clamp(40px, 6vw, 75px) clamp(20px, 5vw, 35px);
+  padding: clamp(40px, 5.5vw, 70px) clamp(20px, 5vw, 35px);
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
   background-color: var(--color-light);
   row-gap: 20px;
+  height: 100%;
 }
 
 .auth-title {
@@ -55,7 +56,25 @@ body {
   display: block;
 }
 
+.submit-auth-btn {
+  margin-inline: auto;
+  width: 70%;
+}
+
+@media (max-width: 767px) {
+  .submit-auth-btn {
+    width: 60%;
+  }
+  .auth {
+    padding: 30px 20px;
+    row-gap: 15px;
+  }
+}
+
 @media (max-width: 480px) {
+  .submit-auth-btn {
+    width: 50%;
+  }
   .auth {
     padding: 50px 20px;
   }

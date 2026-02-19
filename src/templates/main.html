@@ -20,8 +20,8 @@
             
             <div class="header-actions">
                 {% if username %}
+                    <a href="/profile/{{ username }}" class="link header-nickname">{{ name }}</a>
                     <button id="create" class="header-actions-create btn">Создать вопрос</button>
-                    <a href="/profile/{{ username }}" class="link">{{ name }}</a>
                 {% else %}
                     <a href="/users/login" class="link">Войти</a>
                 {% endif %}
