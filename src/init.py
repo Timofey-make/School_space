@@ -35,6 +35,7 @@ class Question(Base):
     __tablename__ = "questions"
     id: Mapped[int] = mapped_column(primary_key=True)
     owner: Mapped[str] = mapped_column(String(30))
+    owner_id: Mapped[int]
     owner_name: Mapped[str] = mapped_column(String(30))
     grade: Mapped[int]
     subject: Mapped[str] = mapped_column(String(20))
@@ -51,6 +52,7 @@ class Comment(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     question_id: Mapped[int]
     owner: Mapped[str] = mapped_column(String(30))
+    owner_id: Mapped[int]
     description: Mapped[str] = mapped_column(String(1000))
     image_filename: Mapped[str] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

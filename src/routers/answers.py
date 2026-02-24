@@ -69,6 +69,7 @@ async def addcomment(
             comments = init.Comment(
                 question_id=id,
                 owner=function.decrypt(request.cookies.get("username")),
+                owner_id=request.cookies.get("id"),
                 description=clean_comment,
                 image_filename=image_paths_str,  # Сохраняем пути к изображениям
             )

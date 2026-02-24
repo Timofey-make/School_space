@@ -6,6 +6,11 @@ from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 from sqlalchemy import update
+import sys
+import os
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 from src import init
 from src import function
 
