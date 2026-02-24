@@ -106,7 +106,8 @@ async def main(request: Request, user_check = Depends(check_user_exists)):
     if request.cookies.get("id"):
         return templates.TemplateResponse("main.html", {"request": request,
                                                         "username": function.decrypt(request.cookies.get("username")),
-                                                        "name": function.decrypt(request.cookies.get("name")),})
+                                                        "name": function.decrypt(request.cookies.get("name")),
+                                                        "id": request.cookies.get("id"),})
     else:
         return templates.TemplateResponse("main.html", {"request": request,
                                                         "username": None,
@@ -224,44 +225,126 @@ async def question_page(request: Request, note_id: int):
     except Exception as e:
         raise HTTPException(status_code=422, detail="Некоректный ввод")
    
-@app.get("/profile/{username}", tags=["Профиль"])
-async def profile(request: Request, username: str):
-    cookie_username = request.cookies.get("username")
-    user_is_admin = False  # по умолчанию гость не админ
+# @app.get("/profile/{username}", tags=["Профиль"])
+# async def profile(request: Request, username: str):
+#     cookie_username = request.cookies.get("username")
+#     user_is_admin = False  # по умолчанию гость не админ
 
-    if cookie_username:
-        try:
-            decrypted_username = function.decrypt(cookie_username)
-        except:
-            decrypted_username = None
-    else:
-        decrypted_username = None
+#     if cookie_username:
+#         try:
+#             decrypted_username = function.decrypt(cookie_username)
+#         except:
+#             decrypted_username = None
+#     else:
+#         decrypted_username = None
 
-    with Session(init.engine) as conn:
+#     with Session(init.engine) as conn:
 
-        # Если пользователь авторизован — узнаём, он админ или нет
-        if decrypted_username:
-            stmt = select(init.User.is_admin).where(init.User.username == decrypted_username)
+#         # Если пользователь авторизован — узнаём, он админ или нет
+#         if decrypted_username:
+#             stmt = select(init.User.is_admin).where(init.User.username == decrypted_username)
+#             result = conn.execute(stmt).fetchone()
+#             if result:
+#                 user_is_admin = result.is_admin
+
+#         # Получаем данные профиля, на который заходим
+#         stmt = select(
+#             init.User.id,
+#             init.User.name,
+#             init.User.title,
+#             init.User.background,
+#             init.User.is_admin,
+#         ).where(init.User.username == username)
+
+#         data = conn.execute(stmt).fetchone()
+#         if not data:
+#             raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+#         account = [data.id, data.name, username, data.title, data.background, data.is_admin]
+
+#         # вопросы пользователя
+#         stmt = select(
+#             init.Question.id,
+#             init.Question.owner,
+#             init.Question.owner_name,
+#             init.Question.subject,
+#             init.Question.grade,
+#             init.Question.description,
+#             init.Question.created_at,
+#         ).where(init.Question.owner == username).order_by(init.Question.id.desc())
+
+#         questions_raw = conn.execute(stmt).fetchall()
+
+#         questions = [
+#             {
+#                 "id": row.id,
+#                 "username": row.owner,
+#                 "name": row.owner_name,
+#                 "subject": row.subject,
+#                 "grade": row.grade,
+#                 "text": row.description,
+#                 "created_at": row.created_at.isoformat() if row.created_at else None,
+#             }
+#             for row in questions_raw
+#         ]
+
+#     # Рендер: если авторизован
+#     if cookie_username:
+#         return templates.TemplateResponse(
+#             "profile.html",
+#             {
+#                 "request": request,
+#                 "account": account,
+#                 "questions": questions,
+#                 "name": function.decrypt(request.cookies.get("name")),
+#                 "username": decrypted_username,
+#                 "id": request.cookies.get("id"),
+#                 "admin": user_is_admin,
+#             }
+#         )
+
+#     # Рендер для гостя
+#     return templates.TemplateResponse(
+#         "profile.html",
+#         {
+#             "request": request,
+#             "account": account,
+#             "questions": questions,
+#         }
+#     )
+
+@app.get("/profile/{id}", tags=["Профиль"])
+async def profile(request: Request, id: int):
+    # Узнаем id зашедшего в профиль человека и ставим флаг что изначально человек зашедший в профиль
+    # не админ
+    guest_id = request.cookies.get("id")
+    user_is_admin = False
+
+    if guest_id:
+        guest_username = function.decrypt(request.cookies.get("username"))
+        with Session(init.engine) as conn:
+            # Проверяем админ ли пользователь
+            stmt = select(init.User.is_admin).where(init.User.id == guest_id)
             result = conn.execute(stmt).fetchone()
             if result:
                 user_is_admin = result.is_admin
-
-        # Получаем данные профиля, на который заходим
+        
+        # Достаем из бд данные о владельце профиля 
         stmt = select(
-            init.User.id,
+            init.User.username,
             init.User.name,
             init.User.title,
             init.User.background,
             init.User.is_admin,
-        ).where(init.User.username == username)
+        ).where(init.User.id == id)
 
         data = conn.execute(stmt).fetchone()
         if not data:
             raise HTTPException(status_code=404, detail="Пользователь не найден")
 
-        account = [data.id, data.name, username, data.title, data.background, data.is_admin]
+        account = [id, data.name, data.username, data.title, data.background, data.is_admin]            
 
-        # вопросы пользователя
+        # Доставем из бд вопросы влыдельце пользователя
         stmt = select(
             init.Question.id,
             init.Question.owner,
@@ -270,9 +353,9 @@ async def profile(request: Request, username: str):
             init.Question.grade,
             init.Question.description,
             init.Question.created_at,
-        ).where(init.Question.owner == username).order_by(init.Question.id.desc())
+        ).where(init.Question.owner == account[2]).order_by(init.Question.id.desc())
 
-        questions_raw = conn.execute(stmt).fetchall()
+        data = conn.execute(stmt).fetchall()
 
         questions = [
             {
@@ -284,11 +367,9 @@ async def profile(request: Request, username: str):
                 "text": row.description,
                 "created_at": row.created_at.isoformat() if row.created_at else None,
             }
-            for row in questions_raw
+            for row in data
         ]
-
-    # Рендер: если авторизован
-    if cookie_username:
+    
         return templates.TemplateResponse(
             "profile.html",
             {
@@ -296,22 +377,19 @@ async def profile(request: Request, username: str):
                 "account": account,
                 "questions": questions,
                 "name": function.decrypt(request.cookies.get("name")),
-                "username": decrypted_username,
-                "id": request.cookies.get("id"),
+                "username": guest_username,
+                "id": guest_id,
                 "admin": user_is_admin,
             }
         )
-
-    # Рендер для гостя
     return templates.TemplateResponse(
-        "profile.html",
-        {
-            "request": request,
-            "account": account,
-            "questions": questions,
-        }
-    )
-    
+    "profile.html",
+    {
+        "request": request,
+        "account": account,
+        "questions": questions,
+    }
+)
 if __name__ == "__main__":
     init.Base.metadata.create_all(init.engine)
     uvicorn.run("main:app", reload=True)

@@ -78,6 +78,7 @@ async def doadd(
             question = init.Question(
                 owner=function.decrypt(request.cookies.get("username")),
                 owner_name=function.decrypt(request.cookies.get("name")),
+                owner_id=request.cookies.get("id"),
                 subject=subject,
                 grade=grade,
                 description=description.strip(),
