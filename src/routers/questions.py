@@ -104,30 +104,55 @@ async def delete_question(
     owner: str = Form(...),
     question_id: str = Form(...),
 ):
-    print(question_id)
+    print(f"Удаление вопроса {question_id}")
     current_user = function.decrypt(request.cookies.get("username"))
+    
     if current_user == owner:
         with Session(init.engine) as session:
-            # Правильное использование delete
-            stmt = sql_delete(init.Question).where(
+            # Сначала получаем все комментарии к этому вопросу, чтобы знать их ID
+            comments_stmt = select(init.Comment.id).where(init.Comment.question_id == question_id)
+            comments = session.execute(comments_stmt).all()
+            comment_ids = [comment[0] for comment in comments]
+            
+            # Удаляем репорты на комментарии (если есть комментарии)
+            if comment_ids:
+                stmt_reports_comments = sql_delete(init.Reporta).where(
+                    init.Reporta.answer_id.in_(comment_ids)
+                )
+                session.execute(stmt_reports_comments)
+                print(f"Удалены репорты для комментариев: {comment_ids}")
+            
+            # Удаляем репорты на сам вопрос
+            stmt_reports_question = sql_delete(init.Reportq).where(
+                init.Reportq.question_id == question_id
+            )
+            session.execute(stmt_reports_question)
+            print(f"Удалены репорты для вопроса {question_id}")
+            
+            # Удаляем комментарии к вопросу
+            stmt_comments = sql_delete(init.Comment).where(
+                init.Comment.question_id == question_id
+            )
+            session.execute(stmt_comments)
+            print(f"Удалены комментарии для вопроса {question_id}")
+            
+            # Удаляем сам вопрос
+            stmt_question = sql_delete(init.Question).where(
                 and_(
                     init.Question.owner == current_user,
                     init.Question.id == question_id, 
                 )
             )
-            session.execute(stmt)
-            stmt = sql_delete(init.Comment).where(
-                and_(
-                    init.Comment.question_id == question_id,
-                )
-            )
-            session.execute(stmt)
-            session.commit()  # Не забывайте скобки!
+            session.execute(stmt_question)
+            
+            session.commit()
+            print(f"Вопрос {question_id} и все связанные данные успешно удалены")
         
         return RedirectResponse("/", status_code=303)    
     else:
+        print(f"Ошибка: пользователь {current_user} не является владельцем вопроса")
         return RedirectResponse("/", status_code=303)
-
+    
 @router.post("/change", tags=["Изменение вопроса"])
 async def change_question(
     request: Request,
@@ -254,7 +279,8 @@ async def report_question(
             
             # Создаем репорт - используем правильные поля из модели Question
             reportq = init.Reportq(
-                question_id=questionId,  
+                question_id=questionId, 
+                owner_id=question.owner_id, 
                 reason=reson,
                 description=question.description,  # ← это поле есть в Question
                 image=question.image_path if question.image_path else ""  # ← используем image_path из Question

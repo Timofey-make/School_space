@@ -76,8 +76,6 @@ body {
 
 .header-actions-create {
     white-space: nowrap;
-    font-size: 11px;
-    padding: 8px;
 }
 
 @media (max-width: 1024px) {
@@ -168,6 +166,7 @@ body {
 @media (max-width: 767px) {
     .questions-content-item {
         padding-top: 25px;
+        gap: 10px;
     }
 }
 .questions-item-filter {
@@ -312,7 +311,7 @@ body {
 
 .create-close-btn {
     position: absolute;
-    top: 15px;
+    top: 10px;
     right: 5px;
     border: none;
     background-color: transparent;

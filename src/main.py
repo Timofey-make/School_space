@@ -92,6 +92,21 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         status_code=404
     )
  
+@app.get("/", tags="Главная")
+async def main(request: Request, user_check = Depends(check_user_exists)):
+    if isinstance(user_check, RedirectResponse):
+        return user_check
+        
+    if request.cookies.get("id"):
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": function.decrypt(request.cookies.get("username")),
+                                                        "name": function.decrypt(request.cookies.get("name")),
+                                                        "id": request.cookies.get("id"),})
+    else:
+        return templates.TemplateResponse("main.html", {"request": request,
+                                                        "username": None,
+                                                        "name": None,})
+
 @app.get("/question/{note_id}", tags=["Страница вопроса"])
 async def question_page(request: Request, note_id: int):
     try:
@@ -103,6 +118,7 @@ async def question_page(request: Request, note_id: int):
             stmt = select(
                 init.Question.owner,
                 init.Question.owner_name,
+                init.Question.owner_id,
                 init.Question.subject,
                 init.Question.grade,
                 init.Question.description,
@@ -128,7 +144,8 @@ async def question_page(request: Request, note_id: int):
                 question_data.created_at,
                 question_data.image_path,
                 question_data.edited,
-            ]
+                question_data.owner_id,
+                ]
 
             # 🔹 Обрабатываем изображения (если несколько — через запятую)
             image_urls = []
@@ -161,17 +178,18 @@ async def question_page(request: Request, note_id: int):
                 # Получаем комментарии
                 stmt = select(
                     init.Comment.owner,
+                    init.Comment.owner_id,
                     init.Comment.description
                 ).where(init.Comment.question_id == note_id).order_by(init.Comment.id.desc())
                 comment_data = conn.execute(stmt).fetchall()
 
                 comments = [
-                    {"owner": row.owner, "description": row.description}
+                    {"owner": row.owner, "description": row.description, "owner_id": row.owner_id,}
                     for row in comment_data
                 ]
-
             return templates.TemplateResponse("answer.html", {
                 "request": request,
+                "id": request.cookies.get("id"),
                 "username": function.decrypt(request.cookies.get("username")),
                 "name": function.decrypt(request.cookies.get("name")),
                 "account": account,
@@ -185,15 +203,15 @@ async def question_page(request: Request, note_id: int):
             with Session(init.engine) as conn:
                 stmt = select(
                     init.Comment.owner,
+                    init.Comment.owner_id,
                     init.Comment.description
                 ).where(init.Comment.question_id == note_id).order_by(init.Comment.id.desc())
                 comment_data = conn.execute(stmt).fetchall()
 
                 comments = [
-                    {"owner": row.owner, "description": row.description}
+                    {"owner": row.owner, "description": row.description, "owner_id": row.owner_id}
                     for row in comment_data
                 ]
-
             return templates.TemplateResponse("answer.html", {
                 "request": request,
                 "result": result,

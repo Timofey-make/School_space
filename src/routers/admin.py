@@ -43,6 +43,7 @@ async def adminpanel(request: Request):
                 "text": r.description,
                 "image": r.image,
                 "edited": r.edited,
+                "owner_id":r.owner_id,
             }
             for r in report_questions
         ]
@@ -58,6 +59,7 @@ async def adminpanel(request: Request):
                 "text": r.description,
                 "image": r.image,
                 "edited": r.edited,
+                "owner_id": r.owner_id,
             }
             for r in report_answers
         ]
@@ -69,6 +71,7 @@ async def adminpanel(request: Request):
                 "questions": questions,
                 "answers": answers,
                 "username": username,
+                "id": request.cookies.get("id"),
                 "name": function.decrypt(request.cookies.get("name")),
             },
         )
@@ -86,32 +89,52 @@ async def deletequestion(
         # Проверяем права доступа
         if not user or (user.id != 1 and not user.is_admin):
             return RedirectResponse("/", status_code=303)
+        
         id = int(id)
-        print(type(id))
+        print(f"Удаление вопроса с ID: {id}")
+        
     with Session(init.engine) as session:
-        stmt = sql_delete(init.Question).where(
-            and_(
-                init.Question.id == id, 
+        # 1. Сначала получаем все комментарии к этому вопросу
+        comments_stmt = select(init.Comment.id).where(init.Comment.question_id == id)
+        comments = session.execute(comments_stmt).all()
+        comment_ids = [comment[0] for comment in comments]
+        
+        # 2. Удаляем репорты на комментарии (если есть комментарии)
+        if comment_ids:
+            stmt_reports_comments = sql_delete(init.Reporta).where(
+                init.Reporta.answer_id.in_(comment_ids)
             )
-        )
-        session.execute(stmt)
-        stmt = sql_delete(init.Reportq).where(
-            and_(
-                init.Reportq.question_id == id,
+            session.execute(stmt_reports_comments)
+            print(f"Удалены репорты для комментариев: {comment_ids}")
+        
+        # 3. Удаляем комментарии к вопросу
+        if comment_ids:
+            stmt_comments = sql_delete(init.Comment).where(
+                init.Comment.question_id == id
             )
+            session.execute(stmt_comments)
+            print(f"Удалены комментарии для вопроса {id}")
+        
+        # 4. Удаляем репорты на сам вопрос
+        stmt_reports_question = sql_delete(init.Reportq).where(
+            init.Reportq.question_id == id
         )
-        session.execute(stmt)
-        stmt = sql_delete(init.Comment).where(
-            and_(
-                init.Comment.question_id == id,
-            )
+        session.execute(stmt_reports_question)
+        print(f"Удалены репорты для вопроса {id}")
+        
+        # 5. Удаляем сам вопрос
+        stmt_question = sql_delete(init.Question).where(
+            init.Question.id == id
         )
-        session.execute(stmt)
-        session.commit() 
+        session.execute(stmt_question)
+        
+        session.commit()
+        print(f"Вопрос {id} и все связанные данные успешно удалены")
+        
     return RedirectResponse("/admin/panel", status_code=303)
 
 @router.post("/deleteanswer")
-async def deletequestion(
+async def deleteanswer(
     request: Request,
     id: str = Form(None),
 ):
@@ -123,22 +146,27 @@ async def deletequestion(
         # Проверяем права доступа
         if not user or (user.id != 1 and not user.is_admin):
             return RedirectResponse("/", status_code=303)
+        
         id = int(id)
-        print(type(id))
+        print(f"Удаление ответа с ID: {id}")
+        
     with Session(init.engine) as session:
-        stmt = sql_delete(init.Comment).where(
-                and_(
-                    init.Comment.id == id, 
-                )
-            )
-        session.execute(stmt)
-        stmt = sql_delete(init.Reporta).where(
-                and_(
-                    init.Reporta.answer_id == id, 
-                )
-            )
-        session.execute(stmt)
+        # 1. Сначала удаляем репорты на этот ответ
+        stmt_reports = sql_delete(init.Reporta).where(
+            init.Reporta.answer_id == id
+        )
+        session.execute(stmt_reports)
+        print(f"Удалены репорты для ответа {id}")
+        
+        # 2. Потом удаляем сам ответ
+        stmt_answer = sql_delete(init.Comment).where(
+            init.Comment.id == id
+        )
+        session.execute(stmt_answer)
+        
         session.commit()
+        print(f"Ответ {id} и связанные репорты успешно удалены")
+        
     return RedirectResponse("/admin/panel", status_code=303)
 
 @router.post("/resolvequestion")

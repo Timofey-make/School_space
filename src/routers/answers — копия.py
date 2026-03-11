@@ -211,14 +211,14 @@ async def report_answer(
     request: Request,
     answerId: str = Form(None),
     questionId: str = Form(None),
-    reson: str = Form(None),
+    complaint_type: str = Form(None),
 ):
-    print(questionId, reson)
+    print(questionId, complaint_type)
     if not request.cookies.get("id"):
         return RedirectResponse("/users/login", status_code=303)
     
     with Session(init.engine) as conn:
-        stmt = select(init.Reporta).where(init.Reporta.answer_id == answerId, init.Reporta.reason == reson)
+        stmt = select(init.Reporta).where(init.Reporta.answer_id == answerId, init.Reporta.reason == complaint_type)
         data = conn.execute(stmt).first()
         if data:
             return RedirectResponse(f"/question/{questionId}", status_code=303)
@@ -234,7 +234,7 @@ async def report_answer(
             # Создаем репорт
             reporta = init.Reporta(
                 answer_id=answerId,  
-                reason=reson,
+                reason=complaint_type,
                 owner_id=question[0].owner_id,
                 image=question[0].image_filename, 
                 description=question[0].description,  # description из вопроса
