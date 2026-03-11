@@ -22,14 +22,8 @@ import shutil
 from fastapi import UploadFile, File
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Depends
-import sys
-import os
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
-import init
-import function
-from routers import users, questions, api, answers, admin
+from . import init
+from . import function
 import sqlite3
 import uvicorn
 from fastapi.exceptions import RequestValidationError
@@ -40,7 +34,7 @@ import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-from routers import users, questions, api, answers, admin
+from src.routers import users, questions, api, answers, admin
 
 app = FastAPI()
 from fastapi.staticfiles import StaticFiles
@@ -97,21 +91,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         {"request": request},
         status_code=404
     )
-
-@app.get("/", tags="Главная")
-async def main(request: Request, user_check = Depends(check_user_exists)):
-    if isinstance(user_check, RedirectResponse):
-        return user_check
-        
-    if request.cookies.get("id"):
-        return templates.TemplateResponse("main.html", {"request": request,
-                                                        "username": function.decrypt(request.cookies.get("username")),
-                                                        "name": function.decrypt(request.cookies.get("name")),
-                                                        "id": request.cookies.get("id"),})
-    else:
-        return templates.TemplateResponse("main.html", {"request": request,
-                                                        "username": None,
-                                                        "name": None,})
  
 @app.get("/question/{note_id}", tags=["Страница вопроса"])
 async def question_page(request: Request, note_id: int):

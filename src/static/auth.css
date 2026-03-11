@@ -15,6 +15,8 @@ body {
   position: absolute;
   top: 10px;
   left: 10px;
+  width: 30px;
+  aspect-ratio: 1;
 }
 
 .auth {
@@ -66,7 +68,6 @@ body {
     width: 60%;
   }
   .auth {
-    padding: 30px 20px;
     row-gap: 15px;
   }
 }
@@ -74,8 +75,5 @@ body {
 @media (max-width: 480px) {
   .submit-auth-btn {
     width: 50%;
-  }
-  .auth {
-    padding: 50px 20px;
   }
 }

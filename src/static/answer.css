@@ -6,9 +6,18 @@
     padding-top: 30px;
     padding-bottom: 30px;
 }
+@media (max-width: 767px) {
+    .question-container {
+        padding-top: 20px;
+    }
+    
+}
 
 .arrow-back-answer {
     margin-right: auto;
+        width: 30px;
+        aspect-ratio: 1;
+
 }
 
 .question {
@@ -25,20 +34,44 @@
     margin-bottom: 30px;
     margin-top: 20px;
 }
+@media (max-width: 767px) {
+    .question.answer-login {
+        margin-bottom: 15px;
+        margin-top: 10px;
+    }
+    .question {
+        padding: 15px;
+    }
+}
+@media (max-width: 480px) {
+    .question {
+        padding: 10px;
+    }
+}
 
 .edit-btn {
     border: none;
     background: transparent;
+}
+.edit-btn img {
+    width: 16px;
+    aspect-ratio: 1;
 }
 .delete-btn {
     display: flex;
     background: transparent;
     border: none;
     color: var(--color-blue-dark);
-    padding: 10px;
-    gap: 10px;
+    padding: 5px;
+    gap: 5px;
+    font-size: clamp(12px, 1.09vw, 14px);
     align-items: center;
 }
+.delete-btn img {
+    width: 16px;
+    aspect-ratio: 1;
+}
+
 .edit-wrapper {
     position: relative;
     display: flex;
@@ -54,10 +87,10 @@
     right: 0;
     margin-top: 5px;
     background-color: var(--color-windows);
-    border-radius: 10px;
+    border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 100;
-    min-width: 140px;
+    min-width: 100px;
 }
 
 .question-edit-container.active {
@@ -121,7 +154,7 @@
 
 .answers-title {
     text-align: center;
-    font-size: clamp(30px, 2.38vw,35px);
+    font-size: clamp(28px, 2.38vw,35px);
 }
 
 .answer-textarea {
