@@ -6,9 +6,18 @@
     padding-top: 30px;
     padding-bottom: 30px;
 }
+@media (max-width: 767px) {
+    .question-container {
+        padding-top: 20px;
+    }
+    
+}
 
 .arrow-back-answer {
     margin-right: auto;
+        width: 30px;
+        aspect-ratio: 1;
+
 }
 
 .question {
@@ -25,20 +34,44 @@
     margin-bottom: 30px;
     margin-top: 20px;
 }
+@media (max-width: 767px) {
+    .question.answer-login {
+        margin-bottom: 15px;
+        margin-top: 10px;
+    }
+    .question {
+        padding: 15px;
+    }
+}
+@media (max-width: 480px) {
+    .question {
+        padding: 10px;
+    }
+}
 
 .edit-btn {
     border: none;
     background: transparent;
+}
+.edit-btn img {
+    width: 16px;
+    aspect-ratio: 1;
 }
 .delete-btn {
     display: flex;
     background: transparent;
     border: none;
     color: var(--color-blue-dark);
-    padding: 10px;
-    gap: 10px;
+    padding: 5px;
+    gap: 5px;
+    font-size: clamp(12px, 1.09vw, 14px);
     align-items: center;
 }
+.delete-btn img {
+    width: 16px;
+    aspect-ratio: 1;
+}
+
 .edit-wrapper {
     position: relative;
     display: flex;
@@ -54,10 +87,10 @@
     right: 0;
     margin-top: 5px;
     background-color: var(--color-windows);
-    border-radius: 10px;
+    border-radius: 5px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     z-index: 100;
-    min-width: 140px;
+    min-width: 100px;
 }
 
 .question-edit-container.active {
@@ -121,7 +154,7 @@
 
 .answers-title {
     text-align: center;
-    font-size: clamp(30px, 2.38vw,35px);
+    font-size: clamp(28px, 2.38vw,35px);
 }
 
 .answer-textarea {
@@ -160,26 +193,36 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: var(--color-light);
-    width: 30%;
-    height: 40%;
-    max-width: 400px;
-    max-height: 300px;
     border-radius: 10px;
-    padding: 45px 15px;
-    overflow-y: auto;
 
+    width: min(92vw, 400px);
+    height: 30%;
+    
+}
+.sure-delete-inner {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.create-close-btn img {
+    width: 30px;
+    aspect-ratio: 1;
 }
 .sure-delete-title {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     flex-wrap: wrap;
     font-weight: 700;
-    font-size: clamp(16px, 1.22vw, 32px);
+    font-size: clamp(16px, 1.4vw, 20px);
 }
+
 .sure-delete-btns {
     display: flex;
     gap: 20px;
@@ -199,34 +242,77 @@
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: var(--color-light);
-    width: 70%;
-    height: 70%;
+    width: 50%;
+    height: 45%;
     max-width: 500px;
-    max-height: 500px;
+    max-height: 400px;
+
+    padding: 25px 15px;
     border-radius: 10px;
-    padding: 45px 15px;
-    overflow-y: auto;
 }
+
+@media (max-width: 480px) {
+    .report {
+        width: 70%;
+        height: 45;
+    }
+}
+
 .report-title {
     text-align: center;
-    margin-bottom: 10px;
     flex-wrap: wrap;
     font-weight: 700;
-    font-size: clamp(20px, 1.22vw, 32px);
+    font-size: clamp(16px, 1.36vw, 20px);
 }
-/* .label-report {
+.label-report {
     height: 100%;
-} */
+    font-size: clamp(12px, 1.09vw, 14px);
+}
 .report-submit-btn {
     margin-top: auto;
 }
 
+
+/* .report {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--color-light);
+    width: 50%;
+    height: 70%;
+
+    max-width: 300px;
+    max-height: 500px;
+
+    border-radius: 10px;
+    padding: 35px 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.report-title {
+    text-align: center;
+    flex-wrap: wrap;
+    font-weight: 700;
+    font-size: clamp(16px, 1.63vw, 24px);
+}
+.label-report {
+    height: 100%;
+    font-size: clamp(14px, 1.09vw, 16px);
+}
+.report-submit-btn {
+    margin-top: auto;
+}
+.reports-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+} */
+
 @media (max-width: 1024px) {
     /* sure-delete */
-    .sure-delete {
-        width: 65%;
-        height: 65%;
-    }
     .image-modal img {
         max-width: 85%;
     }
@@ -239,13 +325,7 @@
         max-width: 90%;
     }
 }
-@media (max-width: 480px) {
-    /* sure-delete */
-    .sure-delete {
-        width: 85%;
-        height: 65%;
-    }
-}
+
 
 
 

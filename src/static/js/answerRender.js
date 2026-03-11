@@ -60,7 +60,7 @@ function toHTML(answer) {
             </div>
         </div>
         <div class="questions-item-header">
-            <a class="link" href="/profile/${answer.username}">${answer.name} (${answer.username})</a>
+            <a class="link" href="/profile/${answer.owner_id}">${answer.name} (${answer.username})</a>
             <div>${timeAgo(answer.created_at)}</div>
             <div>${answer.edited ? "Изменено" : ""}</div>
         </div>

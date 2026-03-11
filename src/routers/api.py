@@ -9,8 +9,8 @@ from sqlalchemy import delete as sql_delete, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 from sqlalchemy import update
-import init
-import function
+from src import init
+from src import function
 import os
 import uuid
 
@@ -30,6 +30,7 @@ async def get_answers():
             init.Comment.id,
             init.Comment.question_id,
             init.Comment.owner,
+            init.Comment.owner_id,
             init.Comment.description,
             init.Comment.created_at,
             init.Comment.image_filename,
@@ -51,6 +52,7 @@ async def get_answers():
             questions.append({
                 "id": row.id,
                 "question_id": row.question_id,
+                "owner_id": row.owner_id,
                 "name": name,  # теперь это строка, а не список
                 "username": row.owner,
                 "text": row.description,
@@ -85,6 +87,7 @@ async def get_questions():
             init.Question.id,
             init.Question.owner,
             init.Question.owner_name,
+            init.Question.owner_id,
             init.Question.subject,
             init.Question.grade,
             init.Question.description,
@@ -106,6 +109,7 @@ async def get_questions():
                 "id": row.id,
                 "username": row.owner,
                 "name": row.owner_name,
+                "owner_id": row.owner_id,
                 "subject": row.subject,
                 "grade": row.grade,
                 "text": row.description,

@@ -65,6 +65,7 @@ class Reportq(Base):
     __table_args__ = {'extend_existing': True}
     
     id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int]
     question_id: Mapped[int] = mapped_column()
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str] = mapped_column(String(1000))  # ← лучше указать длину
@@ -77,6 +78,7 @@ class Reporta(Base):
     __tablename__ = "ReportsA"
     __table_args__ = {'extend_existing': True}
     id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int]
     answer_id: Mapped[int]
     reason: Mapped[str] = mapped_column(String(500))
     description: Mapped[str]

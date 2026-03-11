@@ -23,7 +23,7 @@
             
             <div class="header-actions">
                 {% if username %}
-                    <a href="/profile/{{ username }}" class="link header-nickname">{{ name }}</a>
+                    <a href="/profile/{{ id }}" class="link header-nickname">{{ name }}</a>
                     <button id="create" class="header-actions-create btn">Создать вопрос</button>
                 {% else %}
                     <a href="/users/login" class="link">Войти</a>
@@ -62,7 +62,7 @@
                     </div>
                 </div>
                 <div class="questions-item-header">
-                    <a href="/profile/{{ result[0] }}" class="link">{{ result[1] }} ({{result[0]}})</a>
+                    <a href="/profile/{{ result[9] }}" class="link">{{ result[1] }} ({{result[0]}})</a>
                     <div id="questionSubject">{{ result[2] }}</div>
                     <div id="questionGrade">{{ result[3] }} класс</div>
                     <div id="questionTime" data-question-time="{{ result[6] }}"></div>
@@ -174,20 +174,23 @@
                 <button class="create-close-btn" id="sureCloseQuestionBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <div class="sure-delete-title">Вы уверены что хотите удалить вопрос?</div>
-                <div class="sure-delete-btns">
-                    <form action="/questions/delete" method="post">
-                        <input type="hidden" name="description" value='{{ result[4] }}'>
-                        <input type="hidden" name="owner" value="{{ result[0] }}">
-                        <input type="hidden" name="question_id" value="{{ result[5] }}">
-                        <button type="submit" class="btn delete-sure">
-                            Удалить
+                <div class="sure-delete-inner">
+                    <div class="sure-delete-title">Вы уверены что хотите удалить вопрос?</div>
+                    <div class="sure-delete-btns">
+                        <form action="/questions/delete" method="post">
+                            <input type="hidden" name="description" value='{{ result[4] }}'>
+                            <input type="hidden" name="owner" value="{{ result[0] }}">
+                            <input type="hidden" name="question_id" value="{{ result[5] }}">
+                            <button type="submit" class="btn delete-sure">
+                                Удалить
+                            </button>
+                        </form>
+                        <button type="submit" class="btn" id="sureCancelQuestionBtn">
+                            Отменить
                         </button>
-                    </form>
-                    <button type="submit" class="btn" id="sureCancelQuestionBtn">
-                        Отменить
-                    </button>
+                    </div>
                 </div>
+               
             </section>
         </div>
         {% endif %}
@@ -306,7 +309,6 @@
                 </form>
             </section>
         </div>
-        
         <div class="overlay" id="overlayReportQuestionContainer">
             <section class="report">
                 <button class="create-close-btn" id="closeReportQuestionContainerBtn">
@@ -314,7 +316,7 @@
                 </button>
                 <form action="/questions/report_question" method="post" class="create-form">
                     <div class="report-title">Выберите причину жалобы</div>
-                    
+
                     <input id="reportQuestionQuestionId" type="hidden" name="questionId" value="{{ result[5] }}">
 
                     <label class="label-report">
@@ -341,6 +343,7 @@
                         <input type="radio" name="reson" class="radio-report" value="Другое">
                         Другое
                     </label>
+
                     <button type="submit" class="btn report-submit-btn">
                         Пожаловаться
                     </button>
@@ -349,6 +352,49 @@
         </div>
 
         <div class="overlay" id="overlayReportAnswerContainer">
+            <section class="report">
+                <button class="create-close-btn" id="closeReportAnswerContainerBtn">
+                    <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
+                </button>
+                <form action="/answers/report_answer" method="post" class="create-form">
+                    <div class="report-title">Выберите причину жалобы</div>
+
+                    <input id="reportAnswerId" type="hidden" name="answerId" value="">
+                    <input id="reportAnswerQuestionId" type="hidden" name="questionId" value="">
+
+                    <label class="label-report">
+                        <input type="radio" name="reson" class="radio-report" value="Спам" required>
+                        Спам или реклама
+                    </label>
+
+                    <label class="label-report">
+                        <input type="radio" name="reson" class="radio-report" value="Оскорбительное поведение">
+                        Оскорбительное поведение
+                    </label>
+
+                    <label class="label-report">
+                        <input type="radio" name="reson" class="radio-report" value="Дизинфа">
+                        Ложная информация
+                    </label>
+
+                    <label class="label-report">
+                        <input type="radio" name="reson" class="radio-report" value="Пропаганда насилия">
+                        Пропаганда насилия
+                    </label>
+
+                    <label class="label-report">
+                        <input type="radio" name="reson" class="radio-report" value="Другое">
+                        Другое
+                    </label>
+
+                    <button type="submit" class="btn report-submit-btn">
+                        Пожаловаться
+                    </button>
+                </form>
+            </section>
+        </div>
+
+        <!-- <div class="overlay" id="overlayReportAnswerContainer">
             <section class="report">
                 <button class="create-close-btn" id="closeReportAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
@@ -387,7 +433,7 @@
                     </button>
                 </form>
             </section>
-        </div>
+        </div> -->
     </main>
 </body>
 </html>

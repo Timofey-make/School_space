@@ -19,18 +19,18 @@
             </a>
             <div class="search">
                 <input type="text" id="search" class="input search-input" placeholder="Может вопрос уже задан?">
-                <ul class="search-result-list" id="searchList">
-                </ul>
             </div>
             
             <div class="header-actions">
                 {% if username %}
-                    <button id="create" class="btn header-actions-create">Создать вопрос</button>
-                    <a href="/profile/{{ username }}" class="link">{{ name }}</a>
+                    <a href="/profile/{{ id }}" class="link header-nickname">{{ name }}</a>
+                    <button id="create" class="header-actions-create btn">Создать вопрос</button>
                 {% else %}
                     <a href="/users/login" class="link">Войти</a>
                 {% endif %}
             </div>
+            <ul class="search-result-list" id="searchList">
+            </ul>
         </header>
     </div>
     <main>

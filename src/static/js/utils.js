@@ -25,9 +25,10 @@ export function timeAgo(dateString) {
 }
 
 export function toHTML(question) {
+    console.log(question)
     return `<li class="questions-content-item">
         <div class="questions-item-header">
-            <a href="/profile/${question.username}" class="item-header-name link">
+            <a href="/profile/${question.owner_id}" class="item-header-name link">
                 ${question.name} (${question.username})
             </a>
             <div class="item-header-subject">${question.subject}</div>

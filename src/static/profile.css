@@ -8,8 +8,8 @@
 
 @media (max-width: 767px) {
     .profile-container {
-        padding-top: 10px;
-        padding-bottom: 10px;
+        padding-top: 20px;
+        padding-bottom: 30px;
     }
 }
 
@@ -36,15 +36,18 @@
 
 .profile-name {
     font-weight: 700;
-    font-size: clamp(18px, 1.3vw, 25px);
+    font-size: clamp(16px, 1.49vw, 22px);
     overflow-wrap: break-word;
 }
 
 .profile-additional {
-    font-size: clamp(18px, 1.3vw, 25px);
+    font-size: clamp(16px, 1.3vw, 25px);
     overflow-wrap: break-word;
 }
 
+.admin-link {
+    margin-right: auto;
+}
 
 .logout-link {
     color: var(--color-red);

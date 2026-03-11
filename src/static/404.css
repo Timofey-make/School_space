@@ -7,7 +7,7 @@
     align-items: center;
     background-color: var(--color-light);
     text-align: center;
-    font-size: clamp(23px, 1.9vw, 28px);
+    font-size: clamp(16px, 1.36vw,20px);
     padding-inline: var(--container-padding-x);
 }
 
