@@ -56,7 +56,6 @@ export function toHTML(question) {
 //////// create question
 let filesArrayCreateQuestion = []
 export function initCreateOverlay(createBtn, overlayContainer, closeBtn) {
-    console.log('УраААА')
     if (!createBtn || !overlayContainer) return;
 
     createBtn.addEventListener('click', () => {
@@ -234,7 +233,8 @@ export function searchResult(searchEl, searchList) {
             let questions = await response.json()
             let filtered = questions
             if (value.length < 3) {
-                filtered = filtered.filter((question) => question.text.toLowerCase().includes(value))
+                filtered = filtered.filter((question) => question.text.toLowerCase().includes(value.toLowerCase()))
+
             }
             else {
                 filtered = filtered.filter((question) => {
