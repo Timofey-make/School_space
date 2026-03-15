@@ -234,7 +234,6 @@ export function searchResult(searchEl, searchList) {
             let filtered = questions
             if (value.length < 3) {
                 filtered = filtered.filter((question) => question.text.toLowerCase().includes(value.toLowerCase()))
-
             }
             else {
                 filtered = filtered.filter((question) => {

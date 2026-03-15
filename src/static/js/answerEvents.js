@@ -23,6 +23,20 @@ if (editBtn && editContainer) {
     })
 }
 
+const overlayChangeAnswerContainer = document.getElementById('overlayChangeAnswerContainer')
+const closeChangeAnswerContainerBtn = document.getElementById('closeChangeAnswerContainerBtn')
+
+closeChangeAnswerContainerBtn.addEventListener('click', () => {
+    overlayChangeAnswerContainer.classList.remove('active')
+
+    const textarea = overlayChangeAnswerContainer.querySelector('textarea')
+    if (textarea) textarea.value = ''
+
+    filesArrayChangeAnswer = []
+    previewListChangeAnswer.innerHTML = ``
+})
+
+
 const answersList = document.getElementById('answerList')
 answersList.addEventListener('click', (e) => {
     const editBtn = e.target.closest('#editBtn')
@@ -107,7 +121,7 @@ answersList.addEventListener('click', (e) => {
 
             const answerEl = e.target.closest('.questions-content-item')
             formChangeAnswer.new_description.value = answerEl.querySelector('.answer-text').innerHTML
-            images = answerEl.querySelector('.question-images')
+            let images = answerEl.querySelector('.question-images')
             if (images) {
                 images = images.querySelectorAll('img')
                 filesArrayChangeAnswer = []
@@ -117,19 +131,6 @@ answersList.addEventListener('click', (e) => {
                     renderPreviewsChangeAnswer()
                 });
             }
-
-
-            
-
-            closeChangeAnswerContainerBtn.addEventListener('click', () => {
-                overlayChangeAnswerContainer.classList.remove('active')
-
-                const textarea = overlayChangeAnswerContainer.querySelector('textarea')
-                if (textarea) textarea.value = ''
-
-                filesArrayChangeAnswer = []
-                previewListChangeAnswer.innerHTML = ``
-            })
         }
     }
 
@@ -156,7 +157,6 @@ document.addEventListener('click', (e) => {
         container.classList.remove('active');
     });
     searchList.classList.remove('active')
-    console.log(searchList)
 });
 
 
@@ -200,6 +200,18 @@ async function getFilesFromImages(nodeList) {
   return files;
 }
 
+function renderPreviewsChangeQuestion() {
+    const html = filesArrayChangeQuestion.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListChangeQuestion.innerHTML = html
+}
+function renderPreviewsChangeAnswer() {
+    const html = filesArrayChangeAnswer.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListChangeAnswer.innerHTML = html
+}
 
 const changeQuestionBtn = document.getElementById('changeQuestionBtn')
 const overlayChangeQuestionContainer = document.getElementById('overlayChangeQuestionContainer')
@@ -210,7 +222,7 @@ if (changeQuestionBtn && overlayChangeQuestionContainer && closeChangeQuestionCo
         formChangeQuestion.new_description.value = document.getElementById('questionContent').innerHTML
         formChangeQuestion.subject.value = document.getElementById('questionSubject').innerHTML
         formChangeQuestion.grade.value = document.getElementById('questionGrade').innerHTML.split(' ')[0]
-        images = document.getElementById('questionImages')
+        let images = document.getElementById('questionImages')
         if (images) {
             images = images.querySelectorAll('img')
             filesArrayChangeQuestion = []
@@ -298,13 +310,6 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
         })
         renderPreviewsChangeQuestion()
     })
-
-    function renderPreviewsChangeQuestion() {
-        const html = filesArrayChangeQuestion.map((file, index) => {
-            return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-        }).join('')
-        previewListChangeQuestion.innerHTML = html
-    }
 
     previewListChangeQuestion.addEventListener('click', (e) => {
         const item = e.target.closest('.file-item')
@@ -458,13 +463,6 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
         renderPreviewsChangeAnswer()
     })
 
-
-    function renderPreviewsChangeAnswer() {
-        const html = filesArrayChangeAnswer.map((file, index) => {
-            return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-        }).join('')
-        previewListChangeAnswer.innerHTML = html
-    }
 
     previewListChangeAnswer.addEventListener('click', (e) => {
         const item = e.target.closest('.file-item')
