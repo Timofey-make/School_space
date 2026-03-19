@@ -155,7 +155,7 @@ body {
     position: relative;
     flex-direction: column;
     justify-content: space-between;
-    gap: 20px;
+    row-gap: 10px;
     min-height: 100px;
     border-bottom: 1px solid var(--color-blue-dark);
     border-left: var(--border);
