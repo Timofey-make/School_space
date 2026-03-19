@@ -7,7 +7,8 @@ import json
 import random
 from functools import wraps
 import base64
-from . import init
+# from . import init
+import init
 
 levels = [
     {"title": "Новичок", "min_points": 0, "background": "#333333"},
