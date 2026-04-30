@@ -62,7 +62,7 @@
     background: transparent;
     border: none;
     color: var(--color-blue-dark);
-    padding: 5px;
+    padding: 7px;
     gap: 5px;
     font-size: clamp(12px, 1.09vw, 14px);
     align-items: center;
@@ -160,7 +160,7 @@
 .answer-textarea {
     display: flex;
     flex-direction: column;
-    row-gap: 25px;
+    row-gap: 15px;
     height: 100%;
 }
 

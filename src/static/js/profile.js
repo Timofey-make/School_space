@@ -43,7 +43,8 @@ initCreateOverlay(createBtn, overlayContainer, closeBtn)
 // upload question create
 const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
-uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
+const notificationContainer = document.getElementById('notification')
+uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion, notificationContainer)
 
 
 

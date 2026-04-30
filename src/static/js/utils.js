@@ -25,7 +25,6 @@ export function timeAgo(dateString) {
 }
 
 export function toHTML(question) {
-    console.log(question)
     return `<li class="questions-content-item">
         <div class="questions-item-header">
             <a href="/profile/${question.owner_id}" class="item-header-name link">
@@ -34,7 +33,7 @@ export function toHTML(question) {
             <div class="item-header-subject">${question.subject}</div>
             <div class="item-header-grade">${question.grade} класс</div>
             <div class="item-header-time">${timeAgo(question.created_at)}</div>
-            <div class="item-header-time">${question.edited ? 'Измененно' : '' }</div>
+            <div class="item-header-time">${question.edited ? 'Изменено' : '' }</div>
         </div>
         <div class="questions-item-body">${question.text}</div>
 
@@ -78,9 +77,23 @@ export function initCreateOverlay(createBtn, overlayContainer, closeBtn) {
     })
 }
 
+export function showNotification(text, notificationContainer) {
+    notificationContainer.classList.remove('hide')
+    notificationContainer.querySelector('p').textContent = text
+    setTimeout(() => {
+        notificationContainer.classList.add('hide');
+    }, 3000)
+}
 
-export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion) {
-    if (imageInputCreateQuestion && previewListCreateQuestion) {
+function renderPreviewsCreateQuestion(filesArrayCreateQuestion) {
+    const html = filesArrayCreateQuestion.map((file, index) => {
+        return `<li class="file-item" data-index="${index}">${file['name']}</li>`
+    }).join('')
+    previewListCreateQuestion.innerHTML = html
+}
+
+export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion, notificationContainer) {
+    if (imageInputCreateQuestion && previewListCreateQuestion && notificationContainer) {
         imageInputCreateQuestion.addEventListener('change', (event) => {
             const newFiles = Array.from(event.target.files)
             const MAX_FILES = 5
@@ -89,28 +102,24 @@ export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreate
 
             newFiles.forEach(file => {
                 if (!ALLOWED_TYPES.includes(file.type)) {
-                    alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                    showNotification(`Файл ${file.name} не является изображением JPG/PNG/WebP`, notificationContainer)
                     return
                 }
                 if (file.size > MAX_SIZE) {
-                    alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                    showNotification(`Файл ${file.name} слишком большой (макс. 3 МБ)`, notificationContainer)
                     return
                 }
                 if (filesArrayCreateQuestion.length >= MAX_FILES) {
-                    alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                    showNotification(`Нельзя загрузить больше ${MAX_FILES} изображений`, notificationContainer)
                     return
                 }
                 filesArrayCreateQuestion.push(file)
             })
-            renderPreviewsCreateQuestion()
+            renderPreviewsCreateQuestion(filesArrayCreateQuestion)
         })
 
-        function renderPreviewsCreateQuestion() {
-            const html = filesArrayCreateQuestion.map((file, index) => {
-                return `<li class="file-item" data-index="${index}">${file['name']}</li>`
-            }).join('')
-            previewListCreateQuestion.innerHTML = html
-        }
+        
+
 
         previewListCreateQuestion.addEventListener('click', (e) => {
             const item = e.target.closest('.file-item')
@@ -123,14 +132,17 @@ export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreate
             renderPreviewsCreateQuestion();
         });
 
+
+
         const formCreateQuestion = document.getElementById('formCreateQuestion');
         formCreateQuestion.addEventListener('submit', async (e) => {
-            
             e.preventDefault();
             const formData = new FormData()
+
+            formData.append('description', formCreateQuestion.description.value)
             formData.append('subject', formCreateQuestion.subject.value)
             formData.append('grade', formCreateQuestion.grade.value)
-            formData.append('description', formCreateQuestion.description.value)
+            
 
 
             filesArrayCreateQuestion.forEach(file => {
@@ -143,12 +155,15 @@ export function uploadQuestionCreate(imageInputCreateQuestion, previewListCreate
                     body: formData
                 });
 
-                if (response.redirected) {
+                if (response.redirected) {  
+                    localStorage.setItem('notification', 'Вопрос создан')
                     window.location.href = response.url;
+
                 } else {
                     const text = await response.text();
                 }
             } catch (err) {
+                showNotification(`Ошибка отправки формы: ${err}`, notificationContainer)
                 console.error('Ошибка отправки формы:', err);
             }
         });

@@ -34,6 +34,9 @@
         </header>
     </div>
     <main>
+        <div class="notification hide" id="notification">
+            <p>Вопрос удален</p>
+        </div>
         <section class="profile-container container">
             <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
                 <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
@@ -41,6 +44,7 @@
             <div class="question">
                 <div class="profile-name">{{ account[1] }} ({{ account[2] }})</div>
                 <div class="profile-additional">ID: {{ account[0] }}</div>
+                <div class="profile-additional">Баллы: {{ account[6] }}</div>
                 <div class="profile-additional" style="color: {{ account[4] }}">{{ account[3] }}</div>
 
                 {% if username == account[2] and (account[5] or account[0] == 1)%}

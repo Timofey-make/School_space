@@ -34,8 +34,11 @@
         </header>
     </div>
     <main>
+        <div class="notification hide" id="notification">
+            <p>Вопрос удален</p>
+        </div>
         <section class="question-container container">
-            <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
+            <a href="/" class="arrow-back-answer">
                 <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
             </a>
             <div class="question">
@@ -177,7 +180,7 @@
                 <div class="sure-delete-inner">
                     <div class="sure-delete-title">Вы уверены что хотите удалить вопрос?</div>
                     <div class="sure-delete-btns">
-                        <form action="/questions/delete" method="post">
+                        <form action="/questions/delete" method="post" id="formDeleteQuestion">
                             <input type="hidden" name="description" value='{{ result[4] }}'>
                             <input type="hidden" name="owner" value="{{ result[0] }}">
                             <input type="hidden" name="question_id" value="{{ result[5] }}">
@@ -202,7 +205,7 @@
                 </button>
                 <div class="sure-delete-title">Вы уверены что хотите удалить ответ?</div>
                 <div class="sure-delete-btns">
-                    <form action="/answers/delete_answer" method="post">
+                    <form action="/answers/delete_answer" method="post" id="formDeleteAnswer">
                         <input id="deleteAnswerOwner" type="hidden" name="owner" value="">
                         <input id="deleteAnswerId" type="hidden" name="id" value="">
                         <input id="deleteAnswerQuestionId" type="hidden" name="questionId" value="">
@@ -292,7 +295,7 @@
                         <input id="changeAnswerOwner" type="hidden" name="owner" value="">
                         <input id="changeAnswerId" type="hidden" name="id" value="">
                         <input id="changeQuestionId" type="hidden" name="questionId" value="">
-                        <textarea class="form-text-textarea" name="new_description" id="questionText" minlength="1"></textarea>
+                        <textarea class="form-text-textarea" name="new_description" id="questionText" minlength="1" maxlength="10000"></textarea>
                     </div>
                     <div class="upload-container">
                         <label class="upload-label" for="imageInputChangeAnswer">
@@ -314,7 +317,7 @@
                 <button class="create-close-btn" id="closeReportQuestionContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/questions/report_question" method="post" class="create-form">
+                <form action="/questions/report_question" method="post" class="create-form" id="reportQustionForm">
                     <div class="report-title">Выберите причину жалобы</div>
 
                     <input id="reportQuestionQuestionId" type="hidden" name="questionId" value="{{ result[5] }}">
@@ -356,7 +359,7 @@
                 <button class="create-close-btn" id="closeReportAnswerContainerBtn">
                     <img src="{{ url_for('static', path='imgs/close.svg') }}" alt="Закрыть">
                 </button>
-                <form action="/answers/report_answer" method="post" class="create-form">
+                <form action="/answers/report_answer" method="post" class="create-form" id="reportAnswerForm">
                     <div class="report-title">Выберите причину жалобы</div>
 
                     <input id="reportAnswerId" type="hidden" name="answerId" value="">
