@@ -23,10 +23,10 @@ from fastapi import UploadFile, File
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi import Depends
 # Для Андрюшеньки
-# from . import init
-# from . import function
-import function
-import init 
+from . import init
+from . import function
+# import function
+# import init 
 import sqlite3
 import uvicorn
 from fastapi.exceptions import RequestValidationError
@@ -37,8 +37,8 @@ import os
 from pathlib import Path
 from typing import Optional
 from datetime import datetime
-# from src.routers import users, questions, api, answers, admin
-from routers import users, questions, api, answers, admin
+from src.routers import users, questions, api, answers, admin
+# from routers import users, questions, api, answers, admin
 app = FastAPI()
 from fastapi.staticfiles import StaticFiles
 import os
@@ -295,6 +295,46 @@ async def profile(request: Request, id: int):
                 "admin": user_is_admin,
             }
         )
+    else:
+        with Session(init.engine) as conn:
+            stmt = select(
+                init.User.username,
+                init.User.name,
+                init.User.title,
+                init.User.background,
+                init.User.is_admin,
+                init.User.min_points,
+            ).where(init.User.id == id)
+
+            data = conn.execute(stmt).fetchone()
+            if not data:
+                raise HTTPException(status_code=404, detail="Пользователь не найден")
+
+            account = [id, data.name, data.username, data.title, data.background, data.is_admin, data.min_points]      
+
+            stmt = select(
+                init.Question.id,
+                init.Question.owner,
+                init.Question.owner_name,
+                init.Question.subject,
+                init.Question.grade,
+                init.Question.description,
+                init.Question.created_at,
+            ).where(init.Question.owner == account[2]).order_by(init.Question.id.desc())
+
+            data = conn.execute(stmt).fetchall()
+            questions = [
+                {
+                    "id": row.id,
+                    "username": row.owner,
+                    "name": row.owner_name,
+                    "subject": row.subject,
+                    "grade": row.grade,
+                    "text": row.description,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                }
+                for row in data
+            ]
     return templates.TemplateResponse(
     "profile.html",
     {

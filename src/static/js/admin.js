@@ -1,4 +1,4 @@
-import { initCreateOverlay, uploadQuestionCreate, openModal, closeModal, searchResult } from './utils.js';
+import { initCreateOverlay, uploadQuestionCreate, openModal, closeModal, searchResult, showNotification } from './utils.js';
 
 adminForm = document.getElementById('adminForm')
 
@@ -12,12 +12,13 @@ adminForm.addEventListener('submit', async (e) => {
         body: adminFormData
     });
     if (response.redirected) {
+        localStorage.setItem('notification', `Пользователь ${adminFormData.get('target_username')} назначен админом`)
         window.location.href = response.url;
     }
     else {
         const data = await response.json();
         document.getElementById('adminInput').value = ''
-        document.getElementById("errorMessage").innerText = data.error
+        showNotification(data.error, document.getElementById('notification'))
     }
 })
 
@@ -58,7 +59,9 @@ if (adminAnswerImages) {
 // upload question create
 const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
-uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
+const notificationContainer = document.getElementById('notification')
+uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion, notificationContainer)
+
 
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -71,6 +74,12 @@ window.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('input[type="radio"]').forEach(radio => {
         radio.checked = false;
     });
+    
+    const msg = localStorage.getItem('notification')
+    if (msg) {
+        showNotification(msg, document.getElementById('notification'))
+        localStorage.removeItem('notification')
+    }
 });
 
 // search

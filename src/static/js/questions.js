@@ -1,4 +1,4 @@
-import { toHTML, timeAgo, initCreateOverlay, uploadQuestionCreate, getTrigrams } from './utils.js';
+import { toHTML, timeAgo, initCreateOverlay, uploadQuestionCreate, getTrigrams, showNotification } from './utils.js';
 
 const questionsList = document.querySelector('#questionsList')
 const seacrhInput = document.querySelector('#search')
@@ -94,11 +94,32 @@ window.addEventListener('DOMContentLoaded', () => {
     })
     seacrhInput.value = ''
     document.getElementById('questionText').value = ''
+
+    const msg = localStorage.getItem('notification')
+    if (msg) {
+        showNotification(msg, document.getElementById('notification'))
+        localStorage.removeItem('notification')
+    }    
 });
+
 
 // upload question create
 const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
-uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
+const notificationContainer = document.getElementById('notification')
+uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion, notificationContainer)
 
 
+// close modals
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    const overlays = document.querySelectorAll('.overlay.active')
+    overlays.forEach(overlay => {
+        overlay.classList.remove('active');
+    });
+    const notification = document.getElementById('notification')
+    if (notification) {
+        document.getElementById('notification').classList.add('hide')
+    }
+  }
+});

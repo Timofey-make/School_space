@@ -1,4 +1,4 @@
-import { initCreateOverlay, openModal, closeModal, uploadQuestionCreate, timeAgo, searchResult } from './utils.js';
+import { initCreateOverlay, openModal, closeModal, uploadQuestionCreate, timeAgo, searchResult, showNotification } from './utils.js';
 
 // create question overlay
 const createBtn = document.getElementById('create')
@@ -161,7 +161,60 @@ document.addEventListener('click', (e) => {
 
 
 
+// delete answer
+const formDeleteAnswer = document.getElementById('formDeleteAnswer')
+if (formDeleteAnswer) {
+    formDeleteAnswer.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const formData = new FormData(formDeleteAnswer)
 
+        try {
+            const response = await fetch('/answers/delete_answer', {
+                method: "POST",
+                body: formData
+            });
+            if (response.redirected) {
+                localStorage.setItem('notification', 'Ответ удалён')
+                window.location.href = response.url
+            }
+            else {
+                const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
+            }
+        } catch (err) {
+            showNotification(`Ошибка отправки формы`, notificationContainer)
+            console.error('Ошибка отправки формы:', err);
+        }
+    })
+}
+
+// report answer
+const reportAnswerForm = document.getElementById('reportAnswerForm')
+if (reportAnswerForm) {
+    reportAnswerForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const formData = new FormData(reportAnswerForm)
+        try {
+            const response = await fetch('/answers/report_answer', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.redirected) {
+                localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
+                window.location.href = response.url
+            }
+            else {
+                const text = await response.text();
+                showNotification('Ошибка отправки формы', notificationContainer)
+            }
+        } catch (err) {
+            showNotification('Ошибка отправки формы', notificationContainer)
+            console.error('Ошибка отправки формы:', err)
+        }
+    })
+}
+
+// delete question
 const deleteQuestionBtn = document.getElementById('deleteQuestionBtn')
 const overlaySureQuestionDelete = document.getElementById('overlaySureQuestionDelete')
 const sureCancelQuestionBtn = document.getElementById('sureCancelQuestionBtn')
@@ -178,6 +231,36 @@ if (deleteQuestionBtn && overlaySureQuestionDelete && sureCancelQuestionBtn && s
         overlaySureQuestionDelete.classList.remove('active')
     })
 }
+
+
+const formDeleteQuestion = document.getElementById('formDeleteQuestion')
+if (formDeleteQuestion) {
+    formDeleteQuestion.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(formDeleteQuestion)
+
+        try {
+            const response = await fetch('/questions/delete', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.redirected) {
+                localStorage.setItem('notification', 'Вопрос удален')
+                window.location.href = response.url;
+            } else {
+                const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
+            }
+        } catch (err) {
+            showNotification(`Ошибка отправки формы`, notificationContainer)
+            console.error('Ошибка отправки формы:', err);
+        }
+    })
+}
+
+
+
+// change question/answer
 
 async function getFilesFromImages(nodeList) {
   const files = [];
@@ -250,6 +333,14 @@ if (changeQuestionBtn && overlayChangeQuestionContainer && closeChangeQuestionCo
 }
 
 
+
+
+
+
+
+
+
+// report question
 const reportQuestionBtn = document.getElementById('reportQuestionBtn')
 const overlayReportQuestionContainer = document.getElementById('overlayReportQuestionContainer')
 const closeReportQuestionContainerBtn = document.getElementById('closeReportQuestionContainerBtn')
@@ -265,6 +356,35 @@ if (reportQuestionBtn && overlayReportQuestionContainer) {
     })
 }
 
+const reportQustionForm = document.getElementById('reportQustionForm')
+if (reportQustionForm) {
+    reportQustionForm.addEventListener('submit', async (e) => {
+        e.preventDefault()
+        const formData = new FormData(reportQustionForm)
+
+        try {
+            const response = await fetch('/questions/report_question', {
+                method: 'POST',
+                body: formData
+            });
+            if (response.redirected) {
+                localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
+                window.location.href = response.url;
+            }
+            else {
+                const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
+            }
+        } catch (err) {
+            showNotification(`Ошибка отправки формы`, notificationContainer)
+            console.error('Ошибка отправки формы:', err);
+        }
+    })
+}
+
+
+
+
 // Поле ответа
 const textarea = document.getElementById('answerTextArea')
 if (textarea) {
@@ -279,7 +399,8 @@ if (textarea) {
 // upload question create
 const imageInputCreateQuestion = document.getElementById('imageInputCreateQuestion')
 const previewListCreateQuestion = document.getElementById('previewListCreateQuestion')
-uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion)
+const notificationContainer = document.getElementById('notification')
+uploadQuestionCreate(imageInputCreateQuestion, previewListCreateQuestion, notificationContainer)
 
 // change question upload
 const imageInputChangeQuestion = document.getElementById('imageInputChangeQuestion')
@@ -295,15 +416,15 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
 
         newFiles.forEach(file => {
             if (!ALLOWED_TYPES.includes(file.type)) {
-                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                showNotification(`Файл ${file.name} не является изображением JPG/PNG/WebP`, notificationContainer)
                 return
             }
             if (file.size > MAX_SIZE) {
-                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                showNotification(`Файл ${file.name} слишком большой (макс. 3 МБ)`, notificationContainer)
                 return
             }
             if (filesArrayChangeQuestion.length >= MAX_FILES) {
-                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                showNotification(`Нельзя загрузить больше ${MAX_FILES} изображений`, notificationContainer)
                 return
             }
             filesArrayChangeQuestion.push(file)
@@ -332,11 +453,12 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
         formData.append('id', formChangeQuestion.id.value)
 
 
+
         filesArrayChangeQuestion.forEach(file => {
             formData.append('images', file)
         })
 
-
+        console.log(formData)
         try {
             const response = await fetch('/questions/change', {
                 method: 'POST',
@@ -344,12 +466,15 @@ if (imageInputChangeQuestion && previewListChangeQuestion) {
             });
 
             if (response.redirected) {
+                localStorage.setItem('notification', 'Вопрос изменен')
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
+            showNotification(`Ошибка отправки формы`, notificationContainer)
         }
     });
 }
@@ -369,15 +494,15 @@ if (imageInputCreateAnswer && previewListCreateAnswer) {
 
         newFiles.forEach(file => {
             if (!ALLOWED_TYPES.includes(file.type)) {
-                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                showNotification(`Файл ${file.name} не является изображением JPG/PNG/WebP`, notificationContainer)
                 return
             }
             if (file.size > MAX_SIZE) {
-                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                showNotification(`Файл ${file.name} слишком большой (макс. 3 МБ)`, notificationContainer)
                 return
             }
             if (filesArrayCreateAnswer.length >= MAX_FILES) {
-                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                showNotification(`Нельзя загрузить больше ${MAX_FILES} изображений`, notificationContainer)
                 return
             }
             filesArrayCreateAnswer.push(file)
@@ -406,9 +531,7 @@ if (imageInputCreateAnswer && previewListCreateAnswer) {
     const formCreateAnswer = document.getElementById('formCreateAnswer');
     formCreateAnswer.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const formDataAnswer = new FormData()
-        formDataAnswer.append('comment', formCreateAnswer.comment.value)
-        formDataAnswer.append('id', formCreateAnswer.id.value)
+        const formDataAnswer = new FormData(formCreateAnswer)
 
         filesArrayCreateAnswer.forEach(file => {
             formDataAnswer.append('images', file)
@@ -422,12 +545,15 @@ if (imageInputCreateAnswer && previewListCreateAnswer) {
             });
 
             if (response.redirected) {
+                localStorage.setItem('notification', 'Ответ создан')
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
+            showNotification(`Ошибка отправки формы`, notificationContainer)
         }
     });
 }
@@ -447,15 +573,15 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
 
         newFiles.forEach(file => {
             if (!ALLOWED_TYPES.includes(file.type)) {
-                alert(`Файл ${file.name} не является изображением JPG/PNG/WebP`)
+                showNotification(`Файл ${file.name} не является изображением JPG/PNG/WebP`, notificationContainer)
                 return
             }
             if (file.size > MAX_SIZE) {
-                alert(`Файл ${file.name} слишком большой (макс. 3 МБ)`)
+                showNotification(`Файл ${file.name} слишком большой (макс. 3 МБ)`, notificationContainer)
                 return
             }
             if (filesArrayChangeAnswer.length >= MAX_FILES) {
-                alert(`Нельзя загрузить больше ${MAX_FILES} изображений`)
+                showNotification(`Нельзя загрузить больше ${MAX_FILES} изображений`, notificationContainer)
                 return
             }
             filesArrayChangeAnswer.push(file)
@@ -488,6 +614,7 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
             formDataAnswer.append('images', file)
         })
 
+        console.log(formDataAnswer)
 
         try {
             const response = await fetch('/answers/change_answer', {
@@ -496,12 +623,15 @@ if (imageInputChangeAnswer && previewListChangeAnswer) {
             });
 
             if (response.redirected) {
+                localStorage.setItem('notification', 'Ответ изменён')
                 window.location.href = response.url;
             } else {
                 const text = await response.text();
+                showNotification(`Ошибка отправки формы`, notificationContainer)
             }
         } catch (err) {
             console.error('Ошибка отправки формы:', err);
+            showNotification(`Ошибка отправки формы`, notificationContainer)
         }
     });
 }
@@ -519,6 +649,25 @@ window.addEventListener('DOMContentLoaded', () => {
         radio.checked = false;
     });
     document.getElementById('answerTextArea').value = ''
+
+    const msg = localStorage.getItem('notification')
+    if (msg) {
+        localStorage.removeItem('notification')
+        showNotification(msg, document.getElementById('notification'))
+    }
+});
+
+
+// close modals
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    const overlays = this.document.querySelectorAll('.overlay.active')
+    overlays.forEach(overlay => {
+        console.log(overlay)
+        overlay.classList.remove('active');
+    });
+    this.document.getElementById('notification').classList.add('hide')
+  }
 });
 
 

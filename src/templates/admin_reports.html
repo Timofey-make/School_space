@@ -34,6 +34,9 @@
         </header>
     </div>
     <main>
+        <div class="notification hide" id="notification">
+            <p>Вопрос удален</p>
+        </div>
         <section class="admin-container container">
             <a href="javascript:void(0);" onclick="history.back();" class="arrow-back-answer">
                 <img src="{{ url_for('static', path='imgs/arrow.svg') }}" alt="Назад">
@@ -41,10 +44,9 @@
             <h1 class="answers-title">Назначение админом</h1>
             
             <form action="/admin/add" method="post" class="admin-form" id="adminForm">
-                <input id="adminInput" class="input admin-input" type="text" name="target_username" required>
+                <input id="adminInput" class="input admin-input" type="text" name="target_username" required maxlength="15">
                 <button class="btn admin-btn" type="submit">Назначить админом</button>
             </form>
-            <p id="errorMessage" class="error"></p>
         </section>
         <section class="questions container">
             <h1 class="answers-title">Жалобы на вопросы</h1>
