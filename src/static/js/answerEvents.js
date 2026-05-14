@@ -200,8 +200,10 @@ if (reportAnswerForm) {
                 body: formData
             });
             if (response.redirected) {
-                localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
-                window.location.href = response.url
+                if (!response.url.includes('/users/login')) {
+                    localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
+                }
+                window.location.href = response.url;
             }
             else {
                 const text = await response.text();
@@ -368,7 +370,9 @@ if (reportQustionForm) {
                 body: formData
             });
             if (response.redirected) {
-                localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
+                if (!response.url.includes('/users/login')) {
+                    localStorage.setItem('notification', 'Жалоба отправлена и будет рассмотрена')
+                }
                 window.location.href = response.url;
             }
             else {
