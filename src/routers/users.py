@@ -115,6 +115,7 @@ async def delete_account(
     id: int = Form(...),
 ):
     cookie_user_id = request.cookies.get("id")
+
     if cookie_user_id is None:
         return RedirectResponse("/", status_code=303)
 
@@ -122,43 +123,61 @@ async def delete_account(
 
     with Session(init.engine) as session:
 
-        # Определяем кто делает запрос
+        # Кто делает запрос
         stmt = select(init.User).where(init.User.id == cookie_user_id)
         current_user = session.scalar(stmt)
 
-        # Определяем кого удаляем
+        # Кого удаляем
         stmt = select(init.User).where(init.User.id == id)
         target_user = session.scalar(stmt)
 
         if not target_user or target_user.id == 1:
             return RedirectResponse("/", status_code=303)
-        
+
         # Проверка прав
-        if not current_user or (current_user.id != 1 and not current_user.is_admin) and (id != cookie_user_id):
+        if (
+            not current_user
+            or (
+                current_user.id != 1
+                and not current_user.is_admin
+                and id != cookie_user_id
+            )
+        ):
             return RedirectResponse("/", status_code=303)
 
-        # Получаем имя удаляемого пользователя
         target_username = target_user.username
 
-        # Удаляем пользователя
-        session.execute(sql_delete(init.User).where(init.User.id == id))
-        session.commit()
+        # Получаем все вопросы пользователя
+        stmt = select(init.Question.id).where(init.Question.owner_id == id)
+        question_ids = session.scalars(stmt).all()
 
-        # Удаляем вопросы удалённого пользователя
-        session.execute(
-            sql_delete(init.Question).where(init.Question.owner == target_username)
-        )
-        session.commit()
-
-        # Удаляем комментарии удалённого пользователя
+        # Удаляем комментарии пользователя
         session.execute(
             sql_delete(init.Comment).where(init.Comment.owner == target_username)
         )
+
+        # Удаляем комментарии под вопросами пользователя
+        if question_ids:
+            session.execute(
+                sql_delete(init.Comment).where(
+                    init.Comment.question_id.in_(question_ids)
+                )
+            )
+
+        # Удаляем вопросы пользователя
+        session.execute(
+            sql_delete(init.Question).where(init.Question.owner_id == id)
+        )
+
+        # Удаляем пользователя
+        session.execute(
+            sql_delete(init.User).where(init.User.id == id)
+        )
+
         session.commit()
 
-    # Если пользователь удалил СВОЙ аккаунт — выходим
+    # Если удалил сам себя
     if id == cookie_user_id:
         return RedirectResponse("/users/logout", status_code=303)
 
-    # Если админ удалил чужой аккаунт
     return RedirectResponse("/", status_code=303)
